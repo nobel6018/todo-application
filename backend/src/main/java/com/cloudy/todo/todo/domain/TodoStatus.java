@@ -1,5 +1,5 @@
 package com.cloudy.todo.todo.domain;
 
 public enum TodoStatus {
-    DOING, DONE
+    NOT_YET, DONE
 }
