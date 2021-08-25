@@ -20,7 +20,7 @@ public class TodoService {
     private final TodoRepository todoRepository;
 
     public List<TodoDTO> getTodos() {
-        List<Todo> todos = todoRepository.findAllOrderByIdDesc();
+        List<Todo> todos = todoRepository.findAllByOrderByIdDesc();
 
         return todos.stream().map(Todo::toDTO).collect(Collectors.toList());
     }
@@ -40,7 +40,8 @@ public class TodoService {
         return setLink(parent, children);
     }
 
-    private TodoDTO setLink(Todo parent, Iterable<Todo> children) {
+    @Transactional
+    public TodoDTO setLink(Todo parent, Iterable<Todo> children) {
         for (Todo child : children) {
             parent.addChildren(child);
         }

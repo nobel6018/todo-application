@@ -8,6 +8,7 @@ import lombok.Setter;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -18,8 +19,8 @@ import java.util.stream.Collectors;
 public class Todo {
 
     @Id
-    @GeneratedValue
-    @Column(name = "todo_id")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "todo_id", nullable = false)
     private Long id;
 
     private String content;
@@ -29,7 +30,7 @@ public class Todo {
     private Todo parent;
 
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "parent")
-    private List<Todo> children;
+    private List<Todo> children = new ArrayList<>();
 
     @Enumerated(EnumType.STRING)
     private TodoStatus status;
@@ -45,7 +46,7 @@ public class Todo {
         this.updatedAt = null;
     }
 
-    public void setParent(Todo parent) {
+    public void setMyParent(Todo parent) {
         this.parent = parent;
         parent.getChildren().add(this);
     }

@@ -8,5 +8,7 @@ import java.util.List;
 
 @Repository
 public interface TodoRepository extends PagingAndSortingRepository<Todo, Long> {
-    List<Todo> findAllOrderByIdDesc();
+    List<Todo> findAllByOrderByIdDesc();
+
+    List<Todo> findAllByContent(String content);
 }
