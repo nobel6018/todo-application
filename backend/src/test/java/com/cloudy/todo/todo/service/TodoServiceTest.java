@@ -1,32 +1,31 @@
 package com.cloudy.todo.todo.service;
 
 import com.cloudy.todo.todo.domain.Todo;
+import com.cloudy.todo.todo.domain.TodoStatus;
 import com.cloudy.todo.todo.dto.CreateTodoDTO;
 import com.cloudy.todo.todo.dto.TodoDTO;
-import com.cloudy.todo.todo.exception.TodoNotFoundException;
 import com.cloudy.todo.todo.repository.TodoRepository;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.transaction.annotation.Transactional;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-import javax.persistence.EntityManager;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
-@SpringBootTest
-@Transactional
+@ExtendWith(MockitoExtension.class)
 class TodoServiceTest {
 
-    @Autowired
-    private EntityManager em;
-
-    @Autowired
+    @Mock
     private TodoRepository todoRepository;
 
-    @Autowired
+    @InjectMocks
     private TodoService todoService;
 
 
@@ -34,27 +33,36 @@ class TodoServiceTest {
     public void createTodoTest() {
         // given
         CreateTodoDTO content = new CreateTodoDTO("Todo1");
+        Todo todo = new Todo("Todo1");
 
         // when
-        TodoDTO todo = todoService.createTodo(content);
+        when(todoRepository.save(any(Todo.class))).thenReturn(todo);
+        TodoDTO savedTodo = todoService.createTodo(content);
 
         // then
-        assertThat(todo.getContent()).isEqualTo("Todo1");
+        assertThat(savedTodo.getContent()).isEqualTo("Todo1");
+        assertThat(savedTodo.getChildren().size()).isEqualTo(0);
+        assertThat(savedTodo.getStatus()).isEqualTo(TodoStatus.NOT_YET);
+        assertThat(savedTodo.getCreatedAt()).isNotNull();
     }
 
     @Test
     public void getTodosTest() {
         // given
-        todoRepository.save(new Todo("Todo1"));
-        todoRepository.save(new Todo("Todo2"));
-        todoRepository.save(new Todo("Todo3"));
+        Todo todo1 = new Todo("Todo1");
+        Todo todo2 = new Todo("Todo2");
+        Todo todo3 = new Todo("Todo3");
+        todo3.setId(1L);  // set id reversely intentionally
+        todo2.setId(2L);
+        todo1.setId(3L);
 
         // when
+        when(todoRepository.findAllByOrderByIdDesc()).thenReturn(List.of(todo3, todo2, todo1));
         List<TodoDTO> todos = todoService.getTodos();
 
         // then
         assertThat(todos.size()).isEqualTo(3);
-        assertThat(todos.get(0).getContent()).isEqualTo("Todo3");  // order by id desc
+        assertThat(todos.get(0).getContent()).isEqualTo("Todo3");
         assertThat(todos.get(1).getContent()).isEqualTo("Todo2");
         assertThat(todos.get(2).getContent()).isEqualTo("Todo1");
     }
@@ -62,33 +70,31 @@ class TodoServiceTest {
     @Test
     public void setLinkTest() {
         // given
-        Todo todo1 = todoRepository.save(new Todo("Todo1"));
-        Todo todo2 = todoRepository.save(new Todo("Todo2"));
-        Todo todo3 = todoRepository.save(new Todo("Todo3"));
+        Todo todo1 = new Todo("Todo1");
+        Todo todo2 = new Todo("Todo2");
+        Todo todo3 = new Todo("Todo3");
+        todo1.setId(1L);
+        todo2.setId(2L);
+        todo3.setId(3L);
 
         // when
-        todoService.setLink(todo3, List.of(todo1, todo2));
+        TodoDTO todo = todoService.setLink(todo3, List.of(todo1, todo2));
 
         // then
-        Todo todo = todoRepository.findById(todo3.getId())
-            .orElseThrow(() -> new TodoNotFoundException("There is no Todo where id: " + todo3.getId()));
-
         assertThat(todo.getChildren().size()).isEqualTo(2);
-        assertThat(todo.getChildren().stream().map(Todo::getId).collect(Collectors.toList())).contains(todo1.getId(), todo2.getId());
+        assertThat(todo.getChildren().stream().map(TodoDTO::getId).collect(Collectors.toList())).contains(1L, 2L);
     }
 
     @Test
     public void deleteTodoTest() {
         // given
-        Todo todo = todoRepository.save(new Todo("Todo1"));
+        Long id = 100L;
 
         // when
-        todoService.deleteTodo(todo.getId());
+        todoService.deleteTodo(id);
 
         // then
-        List<Todo> all = (List) todoRepository.findAll();  // down casting
-
-        assertThat(all.size()).isEqualTo(0);
+        verify(todoRepository).deleteById(id);
     }
 
 }
