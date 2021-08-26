@@ -1,6 +1,7 @@
 package com.cloudy.todo.todo.controller;
 
 import com.cloudy.todo.todo.domain.Todo;
+import com.cloudy.todo.todo.domain.TodoStatus;
 import com.cloudy.todo.todo.dto.CreateTodoDTO;
 import com.cloudy.todo.todo.service.TodoService;
 import org.junit.jupiter.api.Disabled;
@@ -11,6 +12,9 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.Month;
 import java.util.List;
 
 import static org.hamcrest.Matchers.is;
@@ -43,6 +47,97 @@ class TodoControllerTest {
 
         // then
         mockMvc.perform(get("/api/v1/todos").contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$[0]['id']", is(2)))
+            .andExpect(jsonPath("$[0]['content']", is("Todo2")))
+            .andExpect(jsonPath("$[0]['status']", is("NOT_YET")))
+            .andExpect(jsonPath("$[1]['id']", is(1)))
+            .andExpect(jsonPath("$[1]['content']", is("Todo1")))
+            .andExpect(jsonPath("$[1]['status']", is("NOT_YET")))
+            .andDo(print());
+    }
+
+    @Test
+    public void GetTodosControllerContainingContentTest() throws Exception {
+        // given
+        Todo todo1 = new Todo("Todo1");
+        todo1.setId(1L);
+        Todo todo2 = new Todo("Hello Todo2");
+        todo2.setId(2L);
+        Todo todo3 = new Todo("Something");
+        todo3.setId(3L);
+
+        // when
+        when(todoService.getTodosOrdered("Todo")).thenReturn(List.of(todo2.toDTO(), todo1.toDTO()));
+
+        // then
+        mockMvc.perform(get("/api/v1/todos?content=Todo").contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.length()", is(2)))
+            .andExpect(jsonPath("$[0]['id']", is(2)))
+            .andExpect(jsonPath("$[0]['content']", is("Hello Todo2")))
+            .andExpect(jsonPath("$[0]['status']", is("NOT_YET")))
+            .andExpect(jsonPath("$[1]['id']", is(1)))
+            .andExpect(jsonPath("$[1]['content']", is("Todo1")))
+            .andExpect(jsonPath("$[1]['status']", is("NOT_YET")))
+            .andDo(print());
+    }
+
+    @Test
+    public void GetTodosControllerByStatusTest() throws Exception {
+        // given
+        Todo todo1 = new Todo("Todo1");
+        todo1.setId(1L);
+        todo1.setStatus(TodoStatus.DONE);
+        Todo todo2 = new Todo("Todo2");
+        todo2.setId(2L);
+        Todo todo3 = new Todo("Todo3");
+        todo3.setId(3L);
+
+        // when
+        when(todoService.getTodosOrdered(TodoStatus.NOT_YET)).thenReturn(List.of(todo3.toDTO(), todo2.toDTO()));
+        when(todoService.getTodosOrdered(TodoStatus.DONE)).thenReturn(List.of(todo1.toDTO()));
+
+        // then
+        mockMvc.perform(get("/api/v1/todos?status=DONE").contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.length()", is(1)))
+            .andExpect(jsonPath("$[0]['id']", is(1)))
+            .andExpect(jsonPath("$[0]['content']", is("Todo1")))
+            .andExpect(jsonPath("$[0]['status']", is("DONE")))
+            .andDo(print());
+
+        mockMvc.perform(get("/api/v1/todos?status=NOT_YET").contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.length()", is(2)))
+            .andExpect(jsonPath("$[0]['id']", is(3)))
+            .andExpect(jsonPath("$[0]['content']", is("Todo3")))
+            .andExpect(jsonPath("$[0]['status']", is("NOT_YET")))
+            .andExpect(jsonPath("$[1]['id']", is(2)))
+            .andExpect(jsonPath("$[1]['content']", is("Todo2")))
+            .andExpect(jsonPath("$[1]['status']", is("NOT_YET")))
+            .andDo(print());
+    }
+
+    @Test
+    public void GetTodosControllerByCreatedDateTest() throws Exception {
+        // given
+        Todo todo1 = new Todo("Todo1");
+        todo1.setId(1L);
+        todo1.setCreatedAt(LocalDateTime.of(2021, Month.AUGUST, 20, 15, 30, 10));
+        Todo todo2 = new Todo("Todo2");
+        todo2.setCreatedAt(LocalDateTime.of(2021, Month.AUGUST, 20, 16, 30, 10));
+        todo2.setId(2L);
+        Todo todo3 = new Todo("Todo3");
+        todo2.setCreatedAt(LocalDateTime.of(2021, Month.AUGUST, 30, 15, 30, 10));
+        todo3.setId(3L);
+        todo3.setCreatedAt(LocalDateTime.now().plusDays(1L));
+
+        // when
+        when(todoService.getTodosOrdered(LocalDate.of(2021, Month.AUGUST, 20))).thenReturn(List.of(todo2.toDTO(), todo1.toDTO()));
+
+        // then
+        mockMvc.perform(get("/api/v1/todos?createdDate=2021-08-20").contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$[0]['id']", is(2)))
             .andExpect(jsonPath("$[0]['content']", is("Todo2")))

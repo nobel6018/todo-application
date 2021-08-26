@@ -6,6 +6,7 @@ import com.cloudy.todo.todo.dto.LinkTodoDTO;
 import com.cloudy.todo.todo.dto.TodoDTO;
 import com.cloudy.todo.todo.service.TodoService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -26,7 +27,7 @@ public class TodoController {
     public ResponseEntity<List<TodoDTO>> getTodos(
         @RequestParam(required = false) String content,
         @RequestParam(required = false) TodoStatus status,
-        @RequestParam(required = false) LocalDate createdDate
+        @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate createdDate
     ) {
         List<TodoDTO> todos;
         if (content != null) {
