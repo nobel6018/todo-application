@@ -4,6 +4,7 @@ import com.cloudy.todo.todo.domain.Todo;
 import com.cloudy.todo.todo.domain.TodoStatus;
 import com.cloudy.todo.todo.dto.CreateTodoDTO;
 import com.cloudy.todo.todo.dto.TodoDTO;
+import com.cloudy.todo.todo.dto.TodoWithoutChildrenDTO;
 import com.cloudy.todo.todo.repository.TodoRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -34,6 +35,7 @@ class TodoServiceTest {
         // given
         CreateTodoDTO content = new CreateTodoDTO("Todo1");
         Todo todo = new Todo("Todo1");
+        todo.setId(1L);
 
         // when
         when(todoRepository.save(any(Todo.class))).thenReturn(todo);
@@ -58,7 +60,7 @@ class TodoServiceTest {
 
         // when
         when(todoRepository.findAllByOrderByIdDesc()).thenReturn(List.of(todo3, todo2, todo1));
-        List<TodoDTO> todos = todoService.getTodos();
+        List<TodoDTO> todos = todoService.getTodosDefaultSorted();
 
         // then
         assertThat(todos.size()).isEqualTo(3);
@@ -82,7 +84,7 @@ class TodoServiceTest {
 
         // then
         assertThat(todo.getChildren().size()).isEqualTo(2);
-        assertThat(todo.getChildren().stream().map(TodoDTO::getId).collect(Collectors.toList())).contains(1L, 2L);
+        assertThat(todo.getChildren().stream().map(TodoWithoutChildrenDTO::getId).collect(Collectors.toList())).contains(1L, 2L);
     }
 
     @Test

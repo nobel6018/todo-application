@@ -19,7 +19,7 @@ public class TodoService {
 
     private final TodoRepository todoRepository;
 
-    public List<TodoDTO> getTodos() {
+    public List<TodoDTO> getTodosDefaultSorted() {
         List<Todo> todos = todoRepository.findAllByOrderByIdDesc();
 
         return todos.stream().map(Todo::toDTO).collect(Collectors.toList());

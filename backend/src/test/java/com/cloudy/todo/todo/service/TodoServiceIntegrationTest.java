@@ -46,7 +46,7 @@ class TodoServiceIntegrationTest {
         todoRepository.save(new Todo("Todo3"));
 
         // when
-        List<TodoDTO> todos = todoService.getTodos();
+        List<TodoDTO> todos = todoService.getTodosDefaultSorted();
 
         // then
         assertThat(todos.size()).isEqualTo(3);

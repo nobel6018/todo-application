@@ -1,6 +1,7 @@
 package com.cloudy.todo.todo.domain;
 
 import com.cloudy.todo.todo.dto.TodoDTO;
+import com.cloudy.todo.todo.dto.TodoWithoutChildrenDTO;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -57,10 +58,30 @@ public class Todo {
     }
 
     public TodoDTO toDTO() {
+        if (this.id == null) {
+            // Todo: business exception
+            throw new IllegalArgumentException("Id should not be null");
+        }
+
         return new TodoDTO(
             this.id,
             this.content,
-            this.children.stream().map(Todo::toDTO).collect(Collectors.toList()),
+            this.children.stream().map(Todo::toBasicDTO).collect(Collectors.toList()),
+            this.status,
+            this.createdAt,
+            this.updatedAt
+        );
+    }
+
+    public TodoWithoutChildrenDTO toBasicDTO() {
+        if (this.id == null) {
+            // Todo: business exception
+            throw new IllegalArgumentException("Id should not be null");
+        }
+
+        return new TodoWithoutChildrenDTO(
+            this.id,
+            this.content,
             this.status,
             this.createdAt,
             this.updatedAt
