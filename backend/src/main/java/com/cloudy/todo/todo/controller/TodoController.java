@@ -1,5 +1,6 @@
 package com.cloudy.todo.todo.controller;
 
+import com.cloudy.todo.todo.domain.TodoStatus;
 import com.cloudy.todo.todo.dto.CreateTodoDTO;
 import com.cloudy.todo.todo.dto.LinkTodoDTO;
 import com.cloudy.todo.todo.dto.TodoDTO;
@@ -11,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @RequiredArgsConstructor
@@ -21,8 +23,21 @@ public class TodoController {
     private final TodoService todoService;
 
     @GetMapping("/api/v1/todos")
-    public ResponseEntity<List<TodoDTO>> getTodos() {
-        List<TodoDTO> todos = todoService.getTodosDefaultSorted();
+    public ResponseEntity<List<TodoDTO>> getTodos(
+        @RequestParam(required = false) String content,
+        @RequestParam(required = false) TodoStatus status,
+        @RequestParam(required = false) LocalDate createdDate
+    ) {
+        List<TodoDTO> todos;
+        if (content != null) {
+            todos = todoService.getTodosOrdered(content);
+        } else if (status != null) {
+            todos = todoService.getTodosOrdered(status);
+        } else if (createdDate != null) {
+            todos = todoService.getTodosOrdered(createdDate);
+        } else {
+            todos = todoService.getTodosOrdered();
+        }
 
         return ResponseEntity.ok(todos);
     }

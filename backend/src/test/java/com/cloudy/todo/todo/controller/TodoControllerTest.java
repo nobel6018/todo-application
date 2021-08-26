@@ -39,7 +39,7 @@ class TodoControllerTest {
         todo2.setId(2L);
 
         // when
-        when(todoService.getTodosDefaultSorted()).thenReturn(List.of(todo2.toDTO(), todo1.toDTO()));
+        when(todoService.getTodosOrdered()).thenReturn(List.of(todo2.toDTO(), todo1.toDTO()));
 
         // then
         mockMvc.perform(get("/api/v1/todos").contentType(MediaType.APPLICATION_JSON))
