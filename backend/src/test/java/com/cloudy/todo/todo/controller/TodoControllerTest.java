@@ -129,7 +129,6 @@ class TodoControllerTest {
         todo2.setCreatedAt(LocalDateTime.of(2021, Month.AUGUST, 20, 16, 30, 10));
         todo2.setId(2L);
         Todo todo3 = new Todo("Todo3");
-        todo2.setCreatedAt(LocalDateTime.of(2021, Month.AUGUST, 30, 15, 30, 10));
         todo3.setId(3L);
         todo3.setCreatedAt(LocalDateTime.now().plusDays(1L));
 

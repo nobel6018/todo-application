@@ -57,6 +57,31 @@ public class Todo {
         child.setParent(this);
     }
 
+    public void finish() {
+        if (this.status == TodoStatus.DONE) {
+            // Todo: business exception
+            throw new RuntimeException("The todo is already done");
+        }
+        for (Todo child : children) {
+            if (child.getStatus() == TodoStatus.NOT_YET) {
+                // Todo: business exception
+                throw new RuntimeException("Child " + child.getId() + " is not done");
+            }
+        }
+
+        this.status = TodoStatus.DONE;
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    public void doing() {
+        if (this.status == TodoStatus.NOT_YET) {
+            throw new RuntimeException("The todo is not done");
+        }
+
+        this.status = TodoStatus.NOT_YET;
+        this.updatedAt = LocalDateTime.now();
+    }
+
     public TodoDTO toDTO() {
         if (this.id == null) {
             // Todo: business exception

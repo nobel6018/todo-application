@@ -61,4 +61,14 @@ public class TodoController {
 
         return ResponseEntity.ok(linkedTodo);
     }
+
+    @PatchMapping("/api/v1/todos/{todoId}/status")
+    public ResponseEntity<TodoDTO> updateTodoStatus(
+        @PathVariable("todoId") Long todoId,
+        @RequestParam("toStatus") TodoStatus status
+    ) {
+        TodoDTO updatedTodo = todoService.updateStatus(todoId, status);
+
+        return ResponseEntity.ok(updatedTodo);
+    }
 }

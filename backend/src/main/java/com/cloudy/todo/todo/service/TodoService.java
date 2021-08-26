@@ -74,6 +74,25 @@ public class TodoService {
     }
 
     @Transactional
+    public TodoDTO updateStatus(Long id, TodoStatus status) {
+        Todo todo = todoRepository.findById(id)
+            .orElseThrow(() -> new TodoNotFoundException("No todo found where id: " + id));
+
+        return updateStatus(todo, status);
+    }
+
+    @Transactional
+    public TodoDTO updateStatus(Todo todo, TodoStatus status) {
+        if (status == TodoStatus.DONE) {
+            todo.finish();
+        } else {
+            todo.doing();
+        }
+
+        return todo.toDTO();
+    }
+
+    @Transactional
     public void deleteTodo(Long id) {
         todoRepository.deleteById(id);
     }
