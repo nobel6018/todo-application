@@ -2,7 +2,6 @@ package com.cloudy.todo.todo.controller;
 
 import com.cloudy.todo.todo.domain.Todo;
 import com.cloudy.todo.todo.dto.CreateTodoDTO;
-import com.cloudy.todo.todo.dto.LinkTodoDTO;
 import com.cloudy.todo.todo.service.TodoService;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -92,7 +91,6 @@ class TodoControllerTest {
     @Test
     public void linkTodoControllerTest() throws Exception {
         // given
-        LinkTodoDTO linkTodo = new LinkTodoDTO(List.of(1L, 2L));
         Todo childTodo1 = new Todo("Todo1");
         childTodo1.setId(1L);
         Todo childTodo2 = new Todo("Todo2");
@@ -109,6 +107,7 @@ class TodoControllerTest {
         // then
         mockMvc.perform(patch("/api/v1/todos/3/link").content("{\"childrenIds\":[1,2]}").contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
+            .andExpect(jsonPath("$.children.length()", is(2)))
             .andExpect(jsonPath("$.children[0]['id']", is(1)))
             .andExpect(jsonPath("$.children[1]['id']", is(2)))
             .andDo(print());
