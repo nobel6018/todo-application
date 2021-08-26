@@ -5,6 +5,7 @@ import com.cloudy.todo.todo.dto.LinkTodoDTO;
 import com.cloudy.todo.todo.dto.TodoDTO;
 import com.cloudy.todo.todo.service.TodoService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -21,7 +22,7 @@ public class TodoController {
 
     @GetMapping("/api/v1/todos")
     public ResponseEntity<List<TodoDTO>> getTodos() {
-        List<TodoDTO> todos = todoService.getTodos();
+        List<TodoDTO> todos = todoService.getTodosDefaultSorted();
 
         return ResponseEntity.ok(todos);
     }
@@ -32,7 +33,7 @@ public class TodoController {
     ) {
         TodoDTO createdTodo = todoService.createTodo(createTodo);
 
-        return ResponseEntity.ok(createdTodo);
+        return new ResponseEntity<>(createdTodo, HttpStatus.CREATED);
     }
 
     @PatchMapping("/api/v1/todos/{todoId}/link")
