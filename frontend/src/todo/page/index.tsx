@@ -1,19 +1,22 @@
-import React, {useEffect, useState} from "react";
+import React, { useEffect, useState } from "react";
 import api from "../../api";
-import {Todo} from "../domain/Todo";
-import {AddButton} from "../element/AddButton";
-import {DeleteButton} from "../element/DeleteButton";
-import {TodoStatus} from "../domain/TodoStatus";
-import {TodoDisplay} from "../element/TodoDisplay";
-import {FindConditionDTO} from "../dto/FindConditionDTO";
-import {FindConditionType} from "../dto/FindConditionType";
-import {AxiosResponse} from "axios";
+import { Todo } from "../domain/Todo";
+import { AddButton } from "../element/AddButton";
+import { DeleteButton } from "../element/DeleteButton";
+import { TodoStatus } from "../domain/TodoStatus";
+import { TodoDisplay } from "../element/TodoDisplay";
+import { FindConditionType } from "../dto/FindConditionType";
+import { AxiosResponse } from "axios";
+import { FindButton } from "../element/FindButton";
 
 function TodoMain() {
     const [todos, setTodos] = useState<Array<Todo>>([]);
     const [doneTodoIds, setDoneTodoIds] = useState<Array<number>>([]);
-    const [content, setContent] = useState<string>("");
-    const [findCondition, setFindCondition] = useState<FindConditionDTO>();
+    const [content, setContent] = useState<string>();
+
+    const [byContent, setByContent] = useState<string>();
+    const [byStatus, setByStatus] = useState<TodoStatus>();
+    const [byCreatedDate, setByCreatedDate] = useState<Date>();
 
     useEffect(() => {
         getTodos();
@@ -32,7 +35,7 @@ function TodoMain() {
                         value={content}
                         onChange={(e) => setContent(e.target.value)}
                     />
-                    <AddButton onClick={() => createTodo(content)} />
+                    <AddButton onClick={() => createTodo(content as string)} />
                 </div>
 
                 {/* Todo List */}
@@ -62,36 +65,61 @@ function TodoMain() {
                     </ul>
 
                     {/* Filter List */}
-                    <hr className="mt-6 border-t-2 border-gray-300"/>
+                    <hr className="mt-6 border-t-2 border-gray-300" />
                     <div className="mt-4">
                         <span
                             className="text-blue-600 cursor-pointer"
-                            onClick={() => handleFindCondition(FindConditionType.STATUS, TodoStatus.DONE)}
+                            onClick={() => GetTodosByStatus(TodoStatus.DONE)}
                         >
                             완료
                         </span>{" "}
                         <span
                             className="text-blue-600 cursor-pointer"
-                            onClick={() => handleFindCondition(FindConditionType.STATUS, TodoStatus.NOT_YET)}
+                            onClick={() => GetTodosByStatus(TodoStatus.NOT_YET)}
                         >
                             진행중
                         </span>
                     </div>
+
+                    <div className="flex">
+                        <input
+                            className="border border-gray-800 focus:border-blue-500 rounded w-full py-2 px-3 mr-4 text-black"
+                            placeholder="내용으로 찾기"
+                            value={byContent}
+                            onChange={(e) => setByContent(e.target.value)}
+                        />
+                        <FindButton onClick={() => getTodoByByContent(byContent as string)} />
+                    </div>
+
                     <div className="text-right text-red-600">
-                        <span className="cursor-pointer" onClick={clearFindCondition}>초기화</span>
+                        <span className="cursor-pointer" onClick={clearFindCondition}>
+                            초기화
+                        </span>
                     </div>
                 </div>
             </div>
         </div>
     );
 
-    function handleFindCondition(condition: FindConditionType, by: string | TodoStatus | Date) {
-        setFindCondition({ condition, by });
-        getTodos(condition, by);
+    function getTodoByByContent(content: string) {
+        setByContent(content);
+        getTodos(FindConditionType.CONTENT, content);
+    }
+
+    function GetTodosByStatus(status: TodoStatus) {
+        setByStatus(status);
+        getTodos(FindConditionType.STATUS, status);
+    }
+
+    function getTodosByCreatedDate(createdDate: Date) {
+        setByCreatedDate(createdDate);
+        getTodos(FindConditionType.CREATED_DATE, createdDate);
     }
 
     function clearFindCondition() {
-        setFindCondition({ condition: undefined, by: undefined });
+        setByContent(undefined);
+        setByStatus(undefined);
+        setByCreatedDate(undefined);
         getTodos();
     }
 

@@ -2,7 +2,10 @@ import React from "react";
 
 export const AddButton = (props: { onClick: any }) => {
     return (
-        <button onClick={props.onClick} className="p-0 w-12 h-10 bg-gray-500 rounded-full hover:bg-gray-400 active:shadow-lg mouse shadow transition ease-in duration-200 focus:outline-none">
+        <button
+            onClick={props.onClick}
+            className="p-0 w-12 h-10 bg-gray-500 rounded-full hover:bg-gray-400 active:shadow-lg mouse shadow transition ease-in duration-200 focus:outline-none"
+        >
             <svg viewBox="0 0 20 20" enableBackground="new 0 0 20 20" className="w-6 h-6 inline-block">
                 <path
                     fill="#FFFFFF"
