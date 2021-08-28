@@ -1,9 +1,10 @@
-import React, { useEffect, useState } from "react";
+import React, {useEffect, useState} from "react";
 import api from "../../api";
-import { Todo } from "../domain/Todo";
-import { AddButton } from "../element/AddButton";
-import { DeleteButton } from "../element/DeleteButton";
-import { TodoStatus } from "../domain/TodoStatus";
+import {Todo} from "../domain/Todo";
+import {AddButton} from "../element/AddButton";
+import {DeleteButton} from "../element/DeleteButton";
+import {TodoStatus} from "../domain/TodoStatus";
+import {TodoDisplay} from "../element/TodoDisplay";
 
 function TodoMain() {
     const [todos, setTodos] = useState<Array<Todo>>([]);
@@ -42,11 +43,14 @@ function TodoMain() {
                                         checked={doneTodoIds.includes(todo.id)}
                                         onChange={() => updateTodoStatus(todo.id, getInverseStatus(todo.status))}
                                     />
-                                    {todo.status === TodoStatus.DONE ? (
-                                        <div className="ml-3 font-semibold line-through">{todo.content}</div>
-                                    ) : (
-                                        <div className="ml-3 font-semibold">{todo.content}</div>
-                                    )}
+                                    <TodoDisplay
+                                        id={todo.id}
+                                        content={todo.content}
+                                        status={todo.status}
+                                        childrenIds={todo.children.map((child) => child.id)}
+                                        createdAt={todo.createdAt}
+                                        updatedAt={todo.updatedAt}
+                                    />
                                     <DeleteButton onClick={() => deleteTodo(todo.id)} />
                                 </div>
                             </li>
@@ -108,6 +112,19 @@ function TodoMain() {
 
     function getInverseStatus(status: TodoStatus) {
         return status === TodoStatus.DONE ? TodoStatus.NOT_YET : TodoStatus.DONE;
+    }
+
+    function setPrecedence(followerId: number, precedenceId: number) {
+        api.setChildren(followerId, { childrenIds: [precedenceId] }).then(() => {
+            loadAllTodos();
+            // setTodos((prevState) => {
+            //     return prevState.map((todo) => {
+            //         if (todo.id === followerId) {
+            //             todo.children
+            //         }
+            //     })
+            // })
+        });
     }
 
     function deleteTodo(id: number) {
