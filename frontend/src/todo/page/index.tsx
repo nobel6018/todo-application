@@ -5,14 +5,18 @@ import {AddButton} from "../element/AddButton";
 import {DeleteButton} from "../element/DeleteButton";
 import {TodoStatus} from "../domain/TodoStatus";
 import {TodoDisplay} from "../element/TodoDisplay";
+import {FindConditionDTO} from "../dto/FindConditionDTO";
+import {FindConditionType} from "../dto/FindConditionType";
+import {AxiosResponse} from "axios";
 
 function TodoMain() {
     const [todos, setTodos] = useState<Array<Todo>>([]);
     const [doneTodoIds, setDoneTodoIds] = useState<Array<number>>([]);
     const [content, setContent] = useState<string>("");
+    const [findCondition, setFindCondition] = useState<FindConditionDTO>();
 
     useEffect(() => {
-        loadAllTodos();
+        getTodos();
     }, []);
 
     return (
@@ -56,28 +60,83 @@ function TodoMain() {
                             </li>
                         ))}
                     </ul>
+
+                    {/* Filter List */}
+                    <hr className="mt-6 border-t-2 border-gray-300"/>
+                    <div className="mt-4">
+                        <span
+                            className="text-blue-600 cursor-pointer"
+                            onClick={() => handleFindCondition(FindConditionType.STATUS, TodoStatus.DONE)}
+                        >
+                            완료
+                        </span>{" "}
+                        <span
+                            className="text-blue-600 cursor-pointer"
+                            onClick={() => handleFindCondition(FindConditionType.STATUS, TodoStatus.NOT_YET)}
+                        >
+                            진행중
+                        </span>
+                    </div>
+                    <div className="text-right text-red-600">
+                        <span className="cursor-pointer" onClick={clearFindCondition}>초기화</span>
+                    </div>
                 </div>
             </div>
         </div>
     );
 
-    function loadAllTodos() {
-        api.getTodos().then((res) => {
-            console.log(res.data);
-            setTodos(
-                res.data.data.map((todo: Todo) => ({
-                    id: todo.id,
-                    content: todo.content,
-                    children: todo.children,
-                    status: todo.status,
-                    createdAt: todo.createdAt,
-                    updatedAt: todo.updatedAt && new Date(todo.updatedAt),
-                }))
-            );
-            setDoneTodoIds(
-                res.data.data.filter((todo: Todo) => todo.status === TodoStatus.DONE).map((todo: Todo) => todo.id)
-            );
-        });
+    function handleFindCondition(condition: FindConditionType, by: string | TodoStatus | Date) {
+        setFindCondition({ condition, by });
+        getTodos(condition, by);
+    }
+
+    function clearFindCondition() {
+        setFindCondition({ condition: undefined, by: undefined });
+        getTodos();
+    }
+
+    function getTodos(condition?: FindConditionType, by?: string | TodoStatus | Date) {
+        switch (condition) {
+            case FindConditionType.STATUS:
+                // @ts-ignore
+                api.getTodos(undefined, by, undefined).then((res) => {
+                    getTodoCommonLogic(res);
+                });
+                break;
+            case FindConditionType.CONTENT:
+                // @ts-ignore
+                api.getTodos(by, undefined, undefined).then((res) => {
+                    getTodoCommonLogic(res);
+                });
+                break;
+            case FindConditionType.CREATED_DATE:
+                // @ts-ignore
+                api.getTodos(undefined, undefined, by).then((res) => {
+                    getTodoCommonLogic(res);
+                });
+                break;
+            default:
+                api.getTodos().then((res) => {
+                    getTodoCommonLogic(res);
+                });
+        }
+    }
+
+    function getTodoCommonLogic(res: AxiosResponse<any>) {
+        console.log(res.data);
+        setTodos(
+            res.data.data.map((todo: Todo) => ({
+                id: todo.id,
+                content: todo.content,
+                children: todo.children,
+                status: todo.status,
+                createdAt: todo.createdAt,
+                updatedAt: todo.updatedAt && new Date(todo.updatedAt),
+            }))
+        );
+        setDoneTodoIds(
+            res.data.data.filter((todo: Todo) => todo.status === TodoStatus.DONE).map((todo: Todo) => todo.id)
+        );
     }
 
     function createTodo(content: string) {
@@ -87,7 +146,7 @@ function TodoMain() {
         }
         api.createTodo({ content }).then(() => {
             setContent("");
-            loadAllTodos();
+            getTodos();
         });
     }
 
@@ -116,7 +175,7 @@ function TodoMain() {
 
     function setPrecedence(followerId: number, precedenceId: number) {
         api.setChildren(followerId, { childrenIds: [precedenceId] }).then(() => {
-            loadAllTodos();
+            getTodos();
             // setTodos((prevState) => {
             //     return prevState.map((todo) => {
             //         if (todo.id === followerId) {
@@ -129,6 +188,13 @@ function TodoMain() {
 
     function deleteTodo(id: number) {
         api.deleteTodo(id).then(() => {
+            todos.forEach((todo) => {
+                if (todo.children.filter((child) => child.id === id).length > 0) {
+                    getTodos();
+                    return;
+                }
+            });
+
             setTodos((prevState) => {
                 return prevState.filter((value) => value.id !== id);
             });
