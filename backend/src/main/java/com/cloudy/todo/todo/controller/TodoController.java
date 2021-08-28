@@ -1,5 +1,6 @@
 package com.cloudy.todo.todo.controller;
 
+import com.cloudy.todo.global.dto.Result;
 import com.cloudy.todo.todo.domain.TodoStatus;
 import com.cloudy.todo.todo.dto.request.CreateTodoDTO;
 import com.cloudy.todo.todo.dto.request.LinkTodoDTO;
@@ -25,7 +26,7 @@ public class TodoController {
     private final TodoService todoService;
 
     @GetMapping("/api/v1/todos")
-    public ResponseEntity<List<TodoDTO>> getTodos(
+    public ResponseEntity<Result<List<TodoDTO>>> getTodos(
         @RequestParam(required = false) String content,
         @RequestParam(required = false) TodoStatus status,
         @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate createdDate
@@ -41,7 +42,7 @@ public class TodoController {
             todos = todoService.getTodosOrdered();
         }
 
-        return ResponseEntity.ok(todos);
+        return ResponseEntity.ok(new Result<>(todos, todos.size()));
     }
 
     @PostMapping("/api/v1/todos")
