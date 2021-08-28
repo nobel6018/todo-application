@@ -1,9 +1,10 @@
 package com.cloudy.todo.todo.controller;
 
 import com.cloudy.todo.todo.domain.TodoStatus;
-import com.cloudy.todo.todo.dto.CreateTodoDTO;
-import com.cloudy.todo.todo.dto.LinkTodoDTO;
-import com.cloudy.todo.todo.dto.TodoDTO;
+import com.cloudy.todo.todo.dto.request.CreateTodoDTO;
+import com.cloudy.todo.todo.dto.request.LinkTodoDTO;
+import com.cloudy.todo.todo.dto.request.UpdateStatusTodoDTO;
+import com.cloudy.todo.todo.dto.response.TodoDTO;
 import com.cloudy.todo.todo.service.TodoService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -65,9 +66,9 @@ public class TodoController {
     @PatchMapping("/api/v1/todos/{todoId}/status")
     public ResponseEntity<TodoDTO> updateTodoStatus(
         @PathVariable("todoId") Long todoId,
-        @RequestParam("toStatus") TodoStatus status
+        @RequestBody UpdateStatusTodoDTO status
     ) {
-        TodoDTO updatedTodo = todoService.updateStatus(todoId, status);
+        TodoDTO updatedTodo = todoService.updateStatus(todoId, status.getStatus());
 
         return ResponseEntity.ok(updatedTodo);
     }

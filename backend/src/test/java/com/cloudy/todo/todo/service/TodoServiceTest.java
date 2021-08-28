@@ -2,9 +2,9 @@ package com.cloudy.todo.todo.service;
 
 import com.cloudy.todo.todo.domain.Todo;
 import com.cloudy.todo.todo.domain.TodoStatus;
-import com.cloudy.todo.todo.dto.CreateTodoDTO;
-import com.cloudy.todo.todo.dto.TodoDTO;
-import com.cloudy.todo.todo.dto.TodoWithoutChildrenDTO;
+import com.cloudy.todo.todo.dto.request.CreateTodoDTO;
+import com.cloudy.todo.todo.dto.request.TodoWithoutChildrenDTO;
+import com.cloudy.todo.todo.dto.response.TodoDTO;
 import com.cloudy.todo.todo.repository.TodoRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -164,6 +165,70 @@ class TodoServiceTest {
         // then
         assertThat(todo.getChildren().size()).isEqualTo(2);
         assertThat(todo.getChildren().stream().map(TodoWithoutChildrenDTO::getId).collect(Collectors.toList())).contains(1L, 2L);
+    }
+
+    @Test
+    public void updateStatusTest() {
+        // given
+        Todo todo1 = new Todo("Todo1");
+        todo1.setId(1L);
+
+        Todo todo2 = new Todo("Todo2");
+        todo2.setId(2L);
+        todo2.setStatus(TodoStatus.DONE);
+
+        // when
+        todoService.updateStatus(todo1, TodoStatus.DONE);
+        todoService.updateStatus(todo2, TodoStatus.NOT_YET);
+
+        // then
+        assertThat(todo1.getStatus()).isEqualTo(TodoStatus.DONE);
+        assertThat(todo2.getStatus()).isEqualTo(TodoStatus.NOT_YET);
+    }
+
+    @Test
+    public void updateStatusConflictTest() {
+        // given
+        Todo todo1 = new Todo("Todo1");
+        todo1.setId(1L);
+
+        Todo todo2 = new Todo("Todo2");
+        todo2.setId(2L);
+        todo2.setStatus(TodoStatus.DONE);
+
+        // when
+
+        // then
+        assertThatThrownBy(() -> todoService.updateStatus(todo1, TodoStatus.NOT_YET))
+            .isInstanceOf(RuntimeException.class)
+            .hasMessage("The todo is not done");
+
+        assertThatThrownBy(() -> todoService.updateStatus(todo2, TodoStatus.DONE))
+            .isInstanceOf(RuntimeException.class)
+            .hasMessage("The todo is already done");
+    }
+
+    @Test
+    public void updateStatusConflictByRelationshipTest() {
+        // given
+        Todo parent = new Todo("Parent");
+        parent.setId(1L);
+        Todo child = new Todo("Child");
+        child.setId(2L);
+
+        // when
+        child.setMyParent(parent);
+
+        // then
+        assertThatThrownBy(() -> todoService.updateStatus(parent, TodoStatus.DONE))
+            .isInstanceOf(RuntimeException.class)
+            .hasMessage("Child (id: 2) is not done");
+
+        child.finish();
+        parent.finish();
+        assertThatThrownBy(() -> todoService.updateStatus(child, TodoStatus.NOT_YET))
+            .isInstanceOf(RuntimeException.class)
+            .hasMessage("Parent (id: 1) is done");
     }
 
     @Test

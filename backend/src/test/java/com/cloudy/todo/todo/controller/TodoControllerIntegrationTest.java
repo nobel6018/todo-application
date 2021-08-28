@@ -2,8 +2,8 @@ package com.cloudy.todo.todo.controller;
 
 import com.cloudy.todo.todo.domain.Todo;
 import com.cloudy.todo.todo.domain.TodoStatus;
-import com.cloudy.todo.todo.dto.CreateTodoDTO;
-import com.cloudy.todo.todo.dto.TodoDTO;
+import com.cloudy.todo.todo.dto.request.CreateTodoDTO;
+import com.cloudy.todo.todo.dto.response.TodoDTO;
 import com.cloudy.todo.todo.repository.TodoRepository;
 import com.cloudy.todo.todo.service.TodoService;
 import org.junit.jupiter.api.Test;

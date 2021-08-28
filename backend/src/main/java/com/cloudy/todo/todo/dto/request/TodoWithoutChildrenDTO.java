@@ -1,19 +1,17 @@
-package com.cloudy.todo.todo.dto;
+package com.cloudy.todo.todo.dto.request;
 
 import com.cloudy.todo.todo.domain.TodoStatus;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Getter
 @AllArgsConstructor
-public class TodoDTO {
+public class TodoWithoutChildrenDTO {
 
     private final Long id;
     private final String content;
-    private final List<TodoWithoutChildrenDTO> children;
     private final TodoStatus status;
     private final LocalDateTime createdAt;
     private final LocalDateTime updatedAt;

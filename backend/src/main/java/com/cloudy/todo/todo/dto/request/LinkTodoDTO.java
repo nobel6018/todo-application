@@ -1,4 +1,4 @@
-package com.cloudy.todo.todo.dto;
+package com.cloudy.todo.todo.dto.request;
 
 import com.sun.istack.NotNull;
 import lombok.AllArgsConstructor;

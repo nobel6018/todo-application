@@ -2,7 +2,7 @@ package com.cloudy.todo.todo.controller;
 
 import com.cloudy.todo.todo.domain.Todo;
 import com.cloudy.todo.todo.domain.TodoStatus;
-import com.cloudy.todo.todo.dto.CreateTodoDTO;
+import com.cloudy.todo.todo.dto.request.CreateTodoDTO;
 import com.cloudy.todo.todo.service.TodoService;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -204,6 +204,24 @@ class TodoControllerTest {
             .andExpect(jsonPath("$.children.length()", is(2)))
             .andExpect(jsonPath("$.children[0]['id']", is(1)))
             .andExpect(jsonPath("$.children[1]['id']", is(2)))
+            .andDo(print());
+    }
+
+    @Test
+    public void updateTodoStatusTest() throws Exception {
+        // given
+        Todo todo = new Todo("Todo1");
+        todo.setId(1L);
+        todo.setStatus(TodoStatus.DONE);
+
+        // when
+        when(todoService.updateStatus(1L, TodoStatus.DONE)).thenReturn(todo.toDTO());
+
+        // then
+        mockMvc.perform(patch("/api/v1/todos/1/status").content("{\"status\":\"DONE\"}").contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.content", is("Todo1")))
+            .andExpect(jsonPath("$.status", is("DONE")))
             .andDo(print());
     }
 }

@@ -1,7 +1,7 @@
 package com.cloudy.todo.todo.domain;
 
-import com.cloudy.todo.todo.dto.TodoDTO;
-import com.cloudy.todo.todo.dto.TodoWithoutChildrenDTO;
+import com.cloudy.todo.todo.dto.request.TodoWithoutChildrenDTO;
+import com.cloudy.todo.todo.dto.response.TodoDTO;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -62,10 +62,10 @@ public class Todo {
             // Todo: business exception
             throw new RuntimeException("The todo is already done");
         }
-        for (Todo child : children) {
+        for (Todo child : this.children) {
             if (child.getStatus() == TodoStatus.NOT_YET) {
                 // Todo: business exception
-                throw new RuntimeException("Child " + child.getId() + " is not done");
+                throw new RuntimeException("Child (id: " + child.getId() + ") is not done");
             }
         }
 
@@ -76,6 +76,9 @@ public class Todo {
     public void doing() {
         if (this.status == TodoStatus.NOT_YET) {
             throw new RuntimeException("The todo is not done");
+        }
+        if (this.parent != null && this.parent.getStatus() == TodoStatus.DONE) {
+            throw new RuntimeException("Parent (id: " + this.parent.getId() + ") is done");
         }
 
         this.status = TodoStatus.NOT_YET;

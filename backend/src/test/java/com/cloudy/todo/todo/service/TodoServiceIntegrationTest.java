@@ -1,8 +1,8 @@
 package com.cloudy.todo.todo.service;
 
 import com.cloudy.todo.todo.domain.Todo;
-import com.cloudy.todo.todo.dto.CreateTodoDTO;
-import com.cloudy.todo.todo.dto.TodoDTO;
+import com.cloudy.todo.todo.dto.request.CreateTodoDTO;
+import com.cloudy.todo.todo.dto.response.TodoDTO;
 import com.cloudy.todo.todo.exception.TodoNotFoundException;
 import com.cloudy.todo.todo.repository.TodoRepository;
 import org.junit.jupiter.api.Test;
