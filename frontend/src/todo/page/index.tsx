@@ -7,19 +7,23 @@ import { TodoStatus } from "../domain/TodoStatus";
 
 function TodoMain() {
     const [todos, setTodos] = useState<Todo[]>([]);
+    const [doneTodoIds, setDoneTodoIds] = useState<Array<number>>([]);
 
     function loadAllTodos() {
         api.getTodos().then((res) => {
             console.log(res.data);
             setTodos(
-                res.data.data.map((data: Todo) => ({
-                    id: data.id,
-                    content: data.content,
-                    children: data.children,
-                    status: data.status,
-                    createdAt: data.createdAt,
-                    updatedAt: data.updatedAt && new Date(data.updatedAt),
+                res.data.data.map((todo: Todo) => ({
+                    id: todo.id,
+                    content: todo.content,
+                    children: todo.children,
+                    status: todo.status,
+                    createdAt: todo.createdAt,
+                    updatedAt: todo.updatedAt && new Date(todo.updatedAt),
                 }))
+            );
+            setDoneTodoIds(
+                res.data.data.filter((todo: Todo) => todo.status === TodoStatus.DONE).map((todo: Todo) => todo.id)
             );
         });
     }
@@ -46,9 +50,14 @@ function TodoMain() {
                 <div>
                     <ul className="mt-4">
                         {todos.map((todo) => (
-                            <li className="flex items-center justify-between mt-3 ">
+                            <li key={todo.id} className="flex items-center justify-between mt-3 ">
                                 <div className="flex items-center">
-                                    <input type="checkbox" name="" checked={todo.status === TodoStatus.DONE} />
+                                    <input
+                                        type="checkbox"
+                                        name=""
+                                        checked={doneTodoIds.includes(todo.id)}
+                                        onChange={() => updateTodoStatus(todo.id, inverseStatus(todo.status))}
+                                    />
                                     {todo.status === TodoStatus.DONE ? (
                                         <div className="capitalize ml-3 font-semibold line-through">{todo.content}</div>
                                     ) : (
@@ -64,8 +73,35 @@ function TodoMain() {
         </div>
     );
 
+    function updateTodoStatus(id: number, status: TodoStatus) {
+        api.updateTodoStatus(id, { status }).then(() => {
+            setTodos((prevState) => {
+                return prevState.map((value) => {
+                    if (value.id === id) {
+                        value.status = status;
+                    }
+                    return value;
+                });
+            });
+            setDoneTodoIds((prevState) => {
+                if (status === TodoStatus.DONE) {
+                    return [...prevState, id];
+                }
+                return prevState.filter((value) => value !== id);
+            });
+        });
+    }
+
+    function inverseStatus(status: TodoStatus) {
+        return status === TodoStatus.DONE ? TodoStatus.NOT_YET : TodoStatus.DONE;
+    }
+
     function deleteTodo(id: number) {
-        api.deleteTodo(id).then(() => loadAllTodos());
+        api.deleteTodo(id).then(() => {
+            setTodos((prevState) => {
+                return prevState.filter((value) => value.id !== id);
+            });
+        });
     }
 }
 
