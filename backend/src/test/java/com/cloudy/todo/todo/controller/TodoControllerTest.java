@@ -3,6 +3,7 @@ package com.cloudy.todo.todo.controller;
 import com.cloudy.todo.todo.domain.Todo;
 import com.cloudy.todo.todo.domain.TodoStatus;
 import com.cloudy.todo.todo.dto.request.CreateTodoDTO;
+import com.cloudy.todo.todo.repository.TodoRepository;
 import com.cloudy.todo.todo.service.TodoService;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -16,6 +17,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.Month;
 import java.util.List;
+import java.util.Optional;
 
 import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.any;
@@ -33,6 +35,9 @@ class TodoControllerTest {
 
     @MockBean
     private TodoService todoService;
+
+    @MockBean
+    private TodoRepository todoRepository;
 
     @Test
     public void GetTodosControllerTest() throws Exception {
@@ -224,6 +229,35 @@ class TodoControllerTest {
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.content", is("Todo1")))
             .andExpect(jsonPath("$.status", is("DONE")))
+            .andDo(print());
+    }
+
+    @Test
+    public void deleteTodoTest() throws Exception {
+        // given
+
+        // when
+        when(todoRepository.findById(1L)).thenReturn(Optional.of(new Todo("todo")));
+
+        // then
+        mockMvc.perform(delete("/api/v1/todos/1").contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.success", is(true)))
+            .andDo(print());
+    }
+
+    // Todo: implement @handlerException
+    @Test
+    @Disabled
+    public void deleteTodoExceptionTest() throws Exception {
+        // given
+
+        // when
+
+        // then
+        mockMvc.perform(delete("/api/v1/todos/1").contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.content", is("There is no Todo where id: 1")))
             .andDo(print());
     }
 }

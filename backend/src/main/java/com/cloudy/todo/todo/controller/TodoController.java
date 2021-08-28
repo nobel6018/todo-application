@@ -5,7 +5,10 @@ import com.cloudy.todo.todo.domain.TodoStatus;
 import com.cloudy.todo.todo.dto.request.CreateTodoDTO;
 import com.cloudy.todo.todo.dto.request.LinkTodoDTO;
 import com.cloudy.todo.todo.dto.request.UpdateStatusTodoDTO;
+import com.cloudy.todo.todo.dto.response.DeleteTodoResponseDTO;
 import com.cloudy.todo.todo.dto.response.TodoDTO;
+import com.cloudy.todo.todo.exception.TodoNotFoundException;
+import com.cloudy.todo.todo.repository.TodoRepository;
 import com.cloudy.todo.todo.service.TodoService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -23,6 +26,7 @@ import java.util.List;
 @RestController
 public class TodoController {
 
+    private final TodoRepository todoRepository;
     private final TodoService todoService;
 
     @GetMapping("/api/v1/todos")
@@ -72,5 +76,18 @@ public class TodoController {
         TodoDTO updatedTodo = todoService.updateStatus(todoId, status.getStatus());
 
         return ResponseEntity.ok(updatedTodo);
+    }
+
+    @DeleteMapping("/api/v1/todos/{todoId}")
+    public ResponseEntity<DeleteTodoResponseDTO> deleteTodo(
+        @PathVariable("todoId") Long todoId
+    ) {
+        if (todoRepository.findById(todoId).isEmpty()) {
+            throw new TodoNotFoundException("There is no Todo where id: " + todoId);
+        }
+
+        todoService.deleteTodo(todoId);
+
+        return ResponseEntity.ok(new DeleteTodoResponseDTO(true));
     }
 }
