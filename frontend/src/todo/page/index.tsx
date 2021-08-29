@@ -13,6 +13,7 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { toYYYYMMDD } from "../../global/util";
 import { CheckButton } from "../element/CheckButton";
+import { stripIndents } from "common-tags";
 
 function TodoMain() {
     const [todos, setTodos] = useState<Array<Todo>>([]);
@@ -23,7 +24,7 @@ function TodoMain() {
     const [byStatus, setByStatus] = useState<TodoStatus>();
     const [byCreatedDate, setByCreatedDate] = useState<Date>();
 
-    const [followerId, setFollowerId] = useState<number>();
+    const [followerId, setFollowerId] = useState<string>();
     const [precedenceIds, setPrecedenceIds] = useState<string>();
 
     useEffect(() => {
@@ -133,7 +134,7 @@ function TodoMain() {
                         className="border border-gray-800 focus:border-blue-500 rounded w-full py-2 px-3 mr-4 text-black"
                         placeholder="나중 (예: 3)"
                         value={followerId}
-                        onChange={(e) => setFollowerId(parseInt(e.target.value))}
+                        onChange={(e) => setFollowerId(e.target.value)}
                     />
                     <CheckButton
                         onClick={() => {
@@ -144,9 +145,14 @@ function TodoMain() {
                             if (precedenceIdsAsArray === undefined) {
                                 return;
                             }
-                            setPrecedence(followerId!, precedenceIdsAsArray!);
+                            setPrecedence(parseInt(followerId!), precedenceIdsAsArray!);
                         }}
                     />
+                </div>
+                <div className="text-right text-red-600 mt-4">
+                    <span className="cursor-pointer" onClick={clearPrecedenceInput}>
+                        초기화
+                    </span>
                 </div>
             </div>
         </div>
@@ -260,18 +266,40 @@ function TodoMain() {
 
     function setPrecedence(followerId: number, precedenceIds: Array<number>) {
         api.setPrecedence(followerId, { precedenceIds: precedenceIds }).then(() => {
-            getTodos();
-            // setTodos((prevState) => {
-            //     return prevState.map((todo) => {
-            //         if (todo.id === followerId) {
-            //             todo.children
-            //         }
-            //     })
-            // })
+            // getTodos();
+            const precedences = todos.filter((value) => precedenceIds.includes(value.id)).sort((a, b) => a.id - b.id);
+
+            setTodos((prevState) => {
+                return prevState.map((todo) => {
+                    if (todo.id === followerId) {
+                        todo.children = precedences.map((todo) => {
+                            return {
+                                id: todo.id,
+                                content: todo.content,
+                                status: todo.status,
+                                createdAt: todo.createdAt,
+                                updatedAt: new Date(),
+                            };
+                        });
+                        todo.updatedAt = new Date();
+                    }
+                    return todo;
+                });
+            });
         });
     }
 
-    function deleteTodo(id: number) {
+    function deleteTodo(id: number, cascade: boolean = false) {
+        const todo = todos.find((value) => value.id === id);
+        if (todo === undefined) {
+            console.error(`No todo found where id: ${id}`);
+        }
+        if (!cascade && todo!.children.length > 0) {
+            return alert(
+                stripIndents`Cannot remove todo having precedences.
+                Retry after removing precedences(${todo!.children.map((it) => it.id)})`
+            );
+        }
         api.deleteTodo(id).then(() => {
             todos.forEach((todo) => {
                 if (todo.children.filter((child) => child.id === id).length > 0) {
@@ -284,6 +312,11 @@ function TodoMain() {
                 return prevState.filter((value) => value.id !== id);
             });
         });
+    }
+
+    function clearPrecedenceInput() {
+        setPrecedenceIds("");
+        setFollowerId("");
     }
 }
 
