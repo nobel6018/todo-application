@@ -5,7 +5,7 @@
 - Todo 어플리케이션 입니다
 - 기능: Todo 조회하기 (내용, 생성날짜, 상태, pagination), 만들기, 선후관계 설정하기
 - `Spring Boot`로 API 서버를 작성하였고 `React`로 Front를 작성하였습니다
-- 서버에 테스트 코드를 작성하였습니다
+- 서버 테스트 코드를 작성하였습니다. 80% 이상의 코드 커버리지를 유지하고 있습니다
 
 # 프로젝트 실행 방법
 
@@ -36,4 +36,6 @@ $ yarn start
 ![screen2](/images/screen2.png)
 ![screen3](/images/screen3.png)
 
+# CodeCoverage
 
+![code-coverage](/images/code-coverage.png)
