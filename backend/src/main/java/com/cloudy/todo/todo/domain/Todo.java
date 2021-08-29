@@ -30,7 +30,7 @@ public class Todo {
     @JoinColumn(name = "parent_todo_id")
     private Todo parent;
 
-    @OneToMany(fetch = FetchType.LAZY, mappedBy = "parent")
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "parent", cascade = CascadeType.ALL)
     private List<Todo> children = new ArrayList<>();
 
     @Enumerated(EnumType.STRING)
@@ -50,11 +50,17 @@ public class Todo {
     public void setMyParent(Todo parent) {
         this.parent = parent;
         parent.getChildren().add(this);
+
+        this.setUpdatedAt(LocalDateTime.now());
+        parent.setUpdatedAt(LocalDateTime.now());
     }
 
     public void addChildren(Todo child) {
         this.children.add(child);
         child.setParent(this);
+
+        this.setUpdatedAt(LocalDateTime.now());
+        child.setUpdatedAt(LocalDateTime.now());
     }
 
     public void finish() {
