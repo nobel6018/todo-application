@@ -3,7 +3,7 @@ package com.cloudy.todo.todo.controller;
 import com.cloudy.todo.global.dto.Result;
 import com.cloudy.todo.todo.domain.TodoStatus;
 import com.cloudy.todo.todo.dto.request.CreateTodoDTO;
-import com.cloudy.todo.todo.dto.request.LinkTodoDTO;
+import com.cloudy.todo.todo.dto.request.PrecedenceTodoDTO;
 import com.cloudy.todo.todo.dto.request.UpdateStatusTodoDTO;
 import com.cloudy.todo.todo.dto.response.DeleteTodoResponseDTO;
 import com.cloudy.todo.todo.dto.response.TodoDTO;
@@ -58,12 +58,12 @@ public class TodoController {
         return new ResponseEntity<>(createdTodo, HttpStatus.CREATED);
     }
 
-    @PatchMapping("/api/v1/todos/{todoId}/link")
+    @PatchMapping("/api/v1/todos/{todoId}/precedence")
     public ResponseEntity<TodoDTO> linkTodo(
-        @PathVariable("todoId") Long parentTodoId,
-        @RequestBody @Validated LinkTodoDTO linkTodo
+        @PathVariable("todoId") Long followerId,
+        @RequestBody @Validated PrecedenceTodoDTO precedence
     ) {
-        TodoDTO linkedTodo = todoService.setLink(parentTodoId, linkTodo.getChildrenIds());
+        TodoDTO linkedTodo = todoService.setPrecedence(followerId, precedence.getPrecedenceIds());
 
         return ResponseEntity.ok(linkedTodo);
     }

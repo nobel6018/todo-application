@@ -190,7 +190,7 @@ class TodoControllerTest {
     }
 
     @Test
-    public void linkTodoControllerTest() throws Exception {
+    public void setPrecedenceTodoControllerTest() throws Exception {
         // given
         Todo childTodo1 = new Todo("Todo1");
         childTodo1.setId(1L);
@@ -203,10 +203,10 @@ class TodoControllerTest {
         parentTodo.addChildren(childTodo2);
 
         // when
-        when(todoService.setLink(3L, List.of(1L, 2L))).thenReturn(parentTodo.toDTO());
+        when(todoService.setPrecedence(3L, List.of(1L, 2L))).thenReturn(parentTodo.toDTO());
 
         // then
-        mockMvc.perform(patch("/api/v1/todos/3/link").content("{\"childrenIds\":[1,2]}").contentType(MediaType.APPLICATION_JSON))
+        mockMvc.perform(patch("/api/v1/todos/3/precedence").content("{\"precedenceIds\":[1,2]}").contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.children.length()", is(2)))
             .andExpect(jsonPath("$.children[0]['id']", is(1)))

@@ -10,8 +10,8 @@ import java.util.List;
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
-public class LinkTodoDTO {
+public class PrecedenceTodoDTO {
 
     @NotNull
-    private List<Long> childrenIds;
+    private List<Long> precedenceIds;
 }

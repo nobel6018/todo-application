@@ -3,7 +3,6 @@ package com.cloudy.todo.todo.service;
 import com.cloudy.todo.todo.domain.Todo;
 import com.cloudy.todo.todo.domain.TodoStatus;
 import com.cloudy.todo.todo.dto.request.CreateTodoDTO;
-import com.cloudy.todo.todo.dto.request.TodoWithoutChildrenDTO;
 import com.cloudy.todo.todo.dto.response.TodoDTO;
 import com.cloudy.todo.todo.exception.TodoNotFoundException;
 import com.cloudy.todo.todo.repository.TodoRepository;
@@ -57,16 +56,16 @@ public class TodoService {
     }
 
     @Transactional
-    public TodoDTO setLink(Long parentId, List<Long> childrenIds) {
-        Todo parent = todoRepository.findById(parentId)
-            .orElseThrow(() -> new TodoNotFoundException("There is no Todo where id: " + parentId));
-        Iterable<Todo> children = todoRepository.findAllById(childrenIds);
+    public TodoDTO setPrecedence(Long followerId, List<Long> precedenceIds) {
+        Todo parent = todoRepository.findById(followerId)
+            .orElseThrow(() -> new TodoNotFoundException("There is no Todo where id: " + followerId));
+        Iterable<Todo> children = todoRepository.findAllById(precedenceIds);
 
-        return setLink(parent, children);
+        return setPrecedence(parent, children);
     }
 
     @Transactional
-    public TodoDTO setLink(Todo parent, Iterable<Todo> children) {
+    public TodoDTO setPrecedence(Todo parent, Iterable<Todo> children) {
         for (Todo child : children) {
             parent.addChildren(child);
         }

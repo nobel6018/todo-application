@@ -161,7 +161,7 @@ public class TodoControllerIntegrationTest {
     }
 
     @Test
-    public void linkTodoControllerIntegrationTest() throws Exception {
+    public void setPrecedenceTodoControllerIntegrationTest() throws Exception {
         // given
 
         // when
@@ -171,8 +171,8 @@ public class TodoControllerIntegrationTest {
 
         // then
         mockMvc.perform(
-                patch("/api/v1/todos/" + todo3.getId() + "/link")
-                    .content("{\"childrenIds\":[" + todo1.getId() + "," + todo2.getId() + "]}")
+                patch("/api/v1/todos/" + todo3.getId() + "/precedence")
+                    .content("{\"precedenceIds\":[" + todo1.getId() + "," + todo2.getId() + "]}")
                     .contentType(MediaType.APPLICATION_JSON)
             )
             .andExpect(status().isOk())

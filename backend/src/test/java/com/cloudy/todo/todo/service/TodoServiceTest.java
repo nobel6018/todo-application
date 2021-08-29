@@ -150,7 +150,7 @@ class TodoServiceTest {
     }
 
     @Test
-    public void setLinkTest() {
+    public void setPrecedenceTest() {
         // given
         Todo todo1 = new Todo("Todo1");
         Todo todo2 = new Todo("Todo2");
@@ -160,7 +160,7 @@ class TodoServiceTest {
         todo3.setId(3L);
 
         // when
-        TodoDTO todo = todoService.setLink(todo3, List.of(todo1, todo2));
+        TodoDTO todo = todoService.setPrecedence(todo3, List.of(todo1, todo2));
 
         // then
         assertThat(todo.getChildren().size()).isEqualTo(2);

@@ -56,14 +56,14 @@ class TodoServiceIntegrationTest {
     }
 
     @Test
-    public void setLinkTest() {
+    public void setPrecedenceTest() {
         // given
         Todo todo1 = todoRepository.save(new Todo("Todo1"));
         Todo todo2 = todoRepository.save(new Todo("Todo2"));
         Todo todo3 = todoRepository.save(new Todo("Todo3"));
 
         // when
-        todoService.setLink(todo3, List.of(todo1, todo2));
+        todoService.setPrecedence(todo3, List.of(todo1, todo2));
 
         // then
         Todo todo = todoRepository.findById(todo3.getId())
