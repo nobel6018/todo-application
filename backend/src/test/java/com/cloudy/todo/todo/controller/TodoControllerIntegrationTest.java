@@ -38,7 +38,7 @@ public class TodoControllerIntegrationTest {
     private TodoRepository todoRepository;
 
     @Test
-    public void GetTodosControllerIntegrationTest() throws Exception {
+    public void getTodosControllerIntegrationTest() throws Exception {
         // given
         CreateTodoDTO content1 = new CreateTodoDTO("Todo1");
         CreateTodoDTO content2 = new CreateTodoDTO("Todo2");
@@ -50,7 +50,7 @@ public class TodoControllerIntegrationTest {
         // then
         mockMvc.perform(get("/api/v1/todos").contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$.size", is(2)))
+            .andExpect(jsonPath("$.totalElements", is(2)))
             .andExpect(jsonPath("$.data[0]['id']", is(todo2.getId().intValue())))  // order by id desc
             .andExpect(jsonPath("$.data[0]['content']", is("Todo2")))
             .andExpect(jsonPath("$.data[0]['status']", is("NOT_YET")))
@@ -61,7 +61,7 @@ public class TodoControllerIntegrationTest {
     }
 
     @Test
-    public void GetTodosContainingContentControllerIntegrationTest() throws Exception {
+    public void getTodosContainingContentControllerIntegrationTest() throws Exception {
         // given
         CreateTodoDTO content1 = new CreateTodoDTO("Todo1");
         CreateTodoDTO content2 = new CreateTodoDTO("Today Todo2 something");
@@ -75,7 +75,7 @@ public class TodoControllerIntegrationTest {
         // then
         mockMvc.perform(get("/api/v1/todos?content=Todo").contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$.size", is(2)))
+            .andExpect(jsonPath("$.totalElements", is(2)))
             .andExpect(jsonPath("$.data[0]['id']", is(todo2.getId().intValue())))  // order by id desc
             .andExpect(jsonPath("$.data[0]['content']", is("Today Todo2 something")))
             .andExpect(jsonPath("$.data[0]['status']", is("NOT_YET")))
@@ -86,7 +86,7 @@ public class TodoControllerIntegrationTest {
     }
 
     @Test
-    public void GetTodosByStatusControllerIntegrationTest() throws Exception {
+    public void getTodosByStatusControllerIntegrationTest() throws Exception {
         // given
 
         // when
@@ -98,7 +98,7 @@ public class TodoControllerIntegrationTest {
         // then
         mockMvc.perform(get("/api/v1/todos?status=DONE").contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$.size", is(1)))
+            .andExpect(jsonPath("$.totalElements", is(1)))
             .andExpect(jsonPath("$.data[0]['id']", is(todo1.getId().intValue())))
             .andExpect(jsonPath("$.data[0]['content']", is("Todo1")))
             .andExpect(jsonPath("$.data[0]['status']", is("DONE")))
@@ -106,7 +106,7 @@ public class TodoControllerIntegrationTest {
 
         mockMvc.perform(get("/api/v1/todos?status=NOT_YET").contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$.size", is(2)))
+            .andExpect(jsonPath("$.totalElements", is(2)))
             .andExpect(jsonPath("$.data[0]['id']", is(todo3.getId().intValue())))
             .andExpect(jsonPath("$.data[0]['content']", is("Todo3")))
             .andExpect(jsonPath("$.data[0]['status']", is("NOT_YET")))
@@ -116,7 +116,7 @@ public class TodoControllerIntegrationTest {
     }
 
     @Test
-    public void GetTodosByCreatedDateControllerIntegrationTest() throws Exception {
+    public void getTodosByCreatedDateControllerIntegrationTest() throws Exception {
         // given
         Todo todo1 = new Todo("Todo1");
         todo1.setCreatedAt(LocalDateTime.of(2021, Month.AUGUST, 20, 15, 30, 10));
@@ -135,11 +135,11 @@ public class TodoControllerIntegrationTest {
         // then
         mockMvc.perform(get("/api/v1/todos?createdDate=2021-08-20").contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$.size", is(2)))
-            .andExpect(jsonPath("$.data[0]['id']", is(2)))
+            .andExpect(jsonPath("$.totalElements", is(2)))
+            .andExpect(jsonPath("$.data[0]['id']", is(todo2.getId().intValue())))
             .andExpect(jsonPath("$.data[0]['content']", is("Todo2")))
             .andExpect(jsonPath("$.data[0]['status']", is("NOT_YET")))
-            .andExpect(jsonPath("$.data[1]['id']", is(1)))
+            .andExpect(jsonPath("$.data[1]['id']", is(todo1.getId().intValue())))
             .andExpect(jsonPath("$.data[1]['content']", is("Todo1")))
             .andExpect(jsonPath("$.data[1]['status']", is("NOT_YET")))
             .andDo(print());

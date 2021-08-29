@@ -8,5 +8,5 @@ import lombok.Getter;
 public class Result<T> {
 
     private T data;
-    private int size;
+    private int totalElements;
 }

@@ -53,7 +53,7 @@ class TodoControllerTest {
         // then
         mockMvc.perform(get("/api/v1/todos").contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$.size", is(2)))
+            .andExpect(jsonPath("$.totalElements", is(2)))
             .andExpect(jsonPath("$.data[0]['id']", is(2)))
             .andExpect(jsonPath("$.data[0]['content']", is("Todo2")))
             .andExpect(jsonPath("$.data[0]['status']", is("NOT_YET")))
@@ -79,7 +79,7 @@ class TodoControllerTest {
         // then
         mockMvc.perform(get("/api/v1/todos?content=Todo").contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$.size", is(2)))
+            .andExpect(jsonPath("$.totalElements", is(2)))
             .andExpect(jsonPath("$.data[0]['id']", is(2)))
             .andExpect(jsonPath("$.data[0]['content']", is("Hello Todo2")))
             .andExpect(jsonPath("$.data[0]['status']", is("NOT_YET")))
@@ -107,7 +107,7 @@ class TodoControllerTest {
         // then
         mockMvc.perform(get("/api/v1/todos?status=DONE").contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$.size", is(1)))
+            .andExpect(jsonPath("$.totalElements", is(1)))
             .andExpect(jsonPath("$.data[0]['id']", is(1)))
             .andExpect(jsonPath("$.data[0]['content']", is("Todo1")))
             .andExpect(jsonPath("$.data[0]['status']", is("DONE")))
@@ -115,7 +115,7 @@ class TodoControllerTest {
 
         mockMvc.perform(get("/api/v1/todos?status=NOT_YET").contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$.size", is(2)))
+            .andExpect(jsonPath("$.totalElements", is(2)))
             .andExpect(jsonPath("$.data[0]['id']", is(3)))
             .andExpect(jsonPath("$.data[0]['content']", is("Todo3")))
             .andExpect(jsonPath("$.data[0]['status']", is("NOT_YET")))
@@ -144,7 +144,7 @@ class TodoControllerTest {
         // then
         mockMvc.perform(get("/api/v1/todos?createdDate=2021-08-20").contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$.size", is(2)))
+            .andExpect(jsonPath("$.totalElements", is(2)))
             .andExpect(jsonPath("$.data[0]['id']", is(2)))
             .andExpect(jsonPath("$.data[0]['content']", is("Todo2")))
             .andExpect(jsonPath("$.data[0]['status']", is("NOT_YET")))
