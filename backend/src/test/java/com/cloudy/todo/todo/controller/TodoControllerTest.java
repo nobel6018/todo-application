@@ -40,7 +40,7 @@ class TodoControllerTest {
     private TodoRepository todoRepository;
 
     @Test
-    public void GetTodosControllerTest() throws Exception {
+    public void getTodosControllerTest() throws Exception {
         // given
         Todo todo1 = new Todo("Todo1");
         todo1.setId(1L);
@@ -64,7 +64,7 @@ class TodoControllerTest {
     }
 
     @Test
-    public void GetTodosControllerContainingContentTest() throws Exception {
+    public void getTodosControllerContainingContentTest() throws Exception {
         // given
         Todo todo1 = new Todo("Todo1");
         todo1.setId(1L);
@@ -90,7 +90,7 @@ class TodoControllerTest {
     }
 
     @Test
-    public void GetTodosControllerByStatusTest() throws Exception {
+    public void getTodosControllerByStatusTest() throws Exception {
         // given
         Todo todo1 = new Todo("Todo1");
         todo1.setId(1L);
@@ -126,7 +126,7 @@ class TodoControllerTest {
     }
 
     @Test
-    public void GetTodosControllerByCreatedDateTest() throws Exception {
+    public void getTodosControllerByCreatedDateTest() throws Exception {
         // given
         Todo todo1 = new Todo("Todo1");
         todo1.setId(1L);

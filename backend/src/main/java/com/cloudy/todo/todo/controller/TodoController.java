@@ -1,5 +1,6 @@
 package com.cloudy.todo.todo.controller;
 
+import com.cloudy.todo.global.dto.PageResult;
 import com.cloudy.todo.global.dto.Result;
 import com.cloudy.todo.todo.domain.TodoStatus;
 import com.cloudy.todo.todo.dto.request.CreateTodoDTO;
@@ -11,6 +12,8 @@ import com.cloudy.todo.todo.exception.TodoNotFoundException;
 import com.cloudy.todo.todo.repository.TodoRepository;
 import com.cloudy.todo.todo.service.TodoService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -29,6 +32,7 @@ public class TodoController {
     private final TodoRepository todoRepository;
     private final TodoService todoService;
 
+    @Deprecated
     @GetMapping("/api/v1/todos")
     public ResponseEntity<Result<List<TodoDTO>>> getTodos(
         @RequestParam(required = false) String content,
@@ -47,6 +51,27 @@ public class TodoController {
         }
 
         return ResponseEntity.ok(new Result<>(todos, todos.size()));
+    }
+
+    @GetMapping("/api/v2/todos")
+    public ResponseEntity<PageResult<TodoDTO>> getTodos(
+        @RequestParam(required = false) String content,
+        @RequestParam(required = false) TodoStatus status,
+        @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate createdDate,
+        @PageableDefault Pageable pageable
+    ) {
+        PageResult<TodoDTO> todos;
+        if (content != null) {
+            todos = todoService.getTodosPageable(content, pageable);
+        } else if (status != null) {
+            todos = todoService.getTodosPageable(status, pageable);
+        } else if (createdDate != null) {
+            todos = todoService.getTodosPageable(createdDate, pageable);
+        } else {
+            todos = todoService.getTodosPageable(pageable);
+        }
+
+        return ResponseEntity.ok(todos);
     }
 
     @PostMapping("/api/v1/todos")

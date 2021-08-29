@@ -1,5 +1,6 @@
 package com.cloudy.todo.todo.service;
 
+import com.cloudy.todo.global.dto.PageResult;
 import com.cloudy.todo.todo.domain.Todo;
 import com.cloudy.todo.todo.domain.TodoStatus;
 import com.cloudy.todo.todo.dto.request.CreateTodoDTO;
@@ -11,10 +12,12 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.Month;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -129,6 +132,114 @@ class TodoServiceTest {
         assertThat(todos.get(1).getContent()).isEqualTo("Todo1");
         assertThat(todos.get(1).getCreatedAt()).isAfter(LocalDate.now().atStartOfDay());
         assertThat(todos.get(1).getCreatedAt()).isBefore(LocalDateTime.of(LocalDate.now(), LocalTime.MAX));
+    }
+
+    @Test
+    public void getTodosPageableTest() {
+        // given
+        Todo todo1 = new Todo("Todo1");
+        todo1.setId(1L);
+        Todo todo2 = new Todo("Todo2");
+        todo2.setId(2L);
+        Todo todo3 = new Todo("Todo3");
+        todo3.setId(3L);
+
+        // when
+        Pageable pageable = PageRequest.of(0, 2, Sort.by("id").descending());
+        Page<Todo> todoPage = new PageImpl(List.of(todo3, todo2), pageable, 3L);  // PageImpl.content field takes 'this page' content
+
+        when(todoRepository.findAll(pageable)).thenReturn(todoPage);
+
+        PageResult<TodoDTO> todos = todoService.getTodosPageable(pageable);
+
+        // then
+        assertThat(todos.getSize()).isEqualTo(2);
+        assertThat(todos.getTotalPages()).isEqualTo(2);
+        assertThat(todos.getData().get(0).getContent()).isEqualTo("Todo3");
+        assertThat(todos.getNumberOfElements()).isEqualTo(2);
+    }
+
+    @Test
+    public void getTodosByContentPageableTest() {
+        // given
+        Todo todo1 = new Todo("Todo1");
+        todo1.setId(1L);
+        Todo todo2 = new Todo("Something");
+        todo2.setId(2L);
+        Todo todo3 = new Todo("Todo3");
+        todo3.setId(3L);
+
+        // when
+        Pageable pageable = PageRequest.of(0, 1, Sort.by("id").descending());
+        Page<Todo> todoPage = new PageImpl(List.of(todo3), pageable, 2L);  // PageImpl.content field takes 'this page' content
+
+        when(todoRepository.findAllByContentContaining("Todo", pageable)).thenReturn(todoPage);
+
+        PageResult<TodoDTO> todos = todoService.getTodosPageable("Todo", pageable);
+
+        // then
+        assertThat(todos.getSize()).isEqualTo(1);
+        assertThat(todos.getTotalPages()).isEqualTo(2);
+        assertThat(todos.getData().get(0).getContent()).isEqualTo("Todo3");
+        assertThat(todos.getNumberOfElements()).isEqualTo(1);
+    }
+
+    @Test
+    public void getTodosByStatusPageableTest() {
+        // given
+        Todo todo1 = new Todo("Todo1");
+        todo1.setId(1L);
+        todo1.setStatus(TodoStatus.DONE);
+        Todo todo2 = new Todo("Something");
+        todo2.setId(2L);
+        todo2.setStatus(TodoStatus.DONE);
+        Todo todo3 = new Todo("Todo3");
+        todo3.setId(3L);
+
+        // when
+        Pageable pageable = PageRequest.of(0, 2, Sort.by("id").descending());
+        Page<Todo> todoPage = new PageImpl(List.of(todo3, todo1), pageable, 2L);  // PageImpl.content field takes 'this page' content
+
+        when(todoRepository.findAllByStatus(TodoStatus.DONE, pageable)).thenReturn(todoPage);
+
+        PageResult<TodoDTO> todos = todoService.getTodosPageable(TodoStatus.DONE, pageable);
+
+        // then
+        assertThat(todos.getSize()).isEqualTo(2);
+        assertThat(todos.getTotalPages()).isEqualTo(1);
+        assertThat(todos.getData().get(0).getContent()).isEqualTo("Todo3");
+        assertThat(todos.getNumberOfElements()).isEqualTo(2);
+    }
+
+    @Test
+    public void getTodosByCreatedDatePageableTest() {
+        // given
+        Todo todo1 = new Todo("Todo1");
+        todo1.setId(1L);
+        todo1.setCreatedAt(LocalDateTime.of(2021, Month.AUGUST, 20, 13, 10, 30));
+        Todo todo2 = new Todo("Something");
+        todo2.setId(2L);
+        todo2.setCreatedAt(LocalDateTime.of(2021, Month.AUGUST, 20, 13, 30, 30));
+        Todo todo3 = new Todo("Todo3");
+        todo3.setId(3L);
+
+        // when
+        Pageable pageable = PageRequest.of(0, 2, Sort.by("id").descending());
+        Page<Todo> todoPage = new PageImpl(List.of(todo2, todo1), pageable, 2L);  // PageImpl.content field takes 'this page' content
+
+        LocalDate date = LocalDate.of(2021, Month.AUGUST, 20);
+        LocalDateTime from = date.atStartOfDay();
+        LocalDateTime to = LocalDateTime.of(date, LocalTime.MAX);
+
+        when(todoRepository.findAllByCreatedAtBetween(from, to, pageable)).thenReturn(todoPage);
+
+        PageResult<TodoDTO> todos = todoService.getTodosPageable(TodoStatus.DONE, pageable);
+
+        // then
+        assertThat(todos.getSize()).isEqualTo(2);
+        assertThat(todos.getTotalPages()).isEqualTo(1);
+        assertThat(todos.getData().get(0).getContent()).isEqualTo("Todo3");
+        assertThat(todos.getNumberOfElements()).isEqualTo(2);
     }
 
     @Test

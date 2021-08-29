@@ -1,5 +1,6 @@
 package com.cloudy.todo.todo.service;
 
+import com.cloudy.todo.global.dto.PageResult;
 import com.cloudy.todo.todo.domain.Todo;
 import com.cloudy.todo.todo.domain.TodoStatus;
 import com.cloudy.todo.todo.dto.request.CreateTodoDTO;
@@ -7,6 +8,8 @@ import com.cloudy.todo.todo.dto.response.TodoDTO;
 import com.cloudy.todo.todo.exception.TodoNotFoundException;
 import com.cloudy.todo.todo.repository.TodoRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -47,6 +50,60 @@ public class TodoService {
         List<Todo> todos = todoRepository.findAllByCreatedAtBetweenOrderByIdDesc(from, to);
 
         return todos.stream().map(Todo::toDTO).collect(Collectors.toList());
+    }
+
+    public PageResult<TodoDTO> getTodosPageable(Pageable pageable) {
+        Page<TodoDTO> todos = todoRepository.findAll(pageable)
+            .map(Todo::toDTO);
+
+        return new PageResult<>(
+            todos.getContent(),
+            todos.getSize(),
+            todos.getTotalPages(),
+            todos.getTotalElements(),
+            todos.getNumberOfElements()
+        );
+    }
+
+    public PageResult<TodoDTO> getTodosPageable(String content, Pageable pageable) {
+        Page<TodoDTO> todos = todoRepository.findAllByContentContaining(content, pageable)
+            .map(Todo::toDTO);
+
+        return new PageResult<>(
+            todos.getContent(),
+            todos.getSize(),
+            todos.getTotalPages(),
+            todos.getTotalElements(),
+            todos.getNumberOfElements()
+        );
+    }
+
+    public PageResult<TodoDTO> getTodosPageable(TodoStatus todoStatus, Pageable pageable) {
+        Page<TodoDTO> todos = todoRepository.findAllByStatus(todoStatus, pageable)
+            .map(Todo::toDTO);
+
+        return new PageResult<>(
+            todos.getContent(),
+            todos.getSize(),
+            todos.getTotalPages(),
+            todos.getTotalElements(),
+            todos.getNumberOfElements()
+        );
+    }
+
+    public PageResult<TodoDTO> getTodosPageable(LocalDate createdDate, Pageable pageable) {
+        LocalDateTime from = createdDate.atStartOfDay();
+        LocalDateTime to = LocalDateTime.of(createdDate, LocalTime.MAX);
+        Page<TodoDTO> todos = todoRepository.findAllByCreatedAtBetween(from, to, pageable)
+            .map(Todo::toDTO);
+
+        return new PageResult<>(
+            todos.getContent(),
+            todos.getSize(),
+            todos.getTotalPages(),
+            todos.getTotalElements(),
+            todos.getNumberOfElements()
+        );
     }
 
     @Transactional
