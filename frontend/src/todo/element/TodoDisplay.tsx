@@ -1,6 +1,6 @@
 import React from "react";
-import {TodoStatus} from "../domain/TodoStatus";
-import {toYYYYMMDD} from "../../global/util";
+import { TodoStatus } from "../domain/TodoStatus";
+import { toYYYYMMDD } from "../../global/util";
 
 export const TodoDisplay = (props: {
     id: number;
@@ -11,17 +11,19 @@ export const TodoDisplay = (props: {
     updatedAt?: Date;
 }) => {
     const { id, content, status, childrenIds, createdAt, updatedAt } = props;
-    return status === TodoStatus.DONE ? (
-        <div className="ml-3 font-semibold line-through">
-            <div>#{id} {content}</div>
-            {childrenIds.map((childId) => <span>@{childId}</span>)}
-            <div>작성: {toYYYYMMDD(createdAt)} {updatedAt && `수정: ${toYYYYMMDD(updatedAt)}`}</div>
-        </div>
-    ) : (
-        <div className="ml-3 font-semibold">
-            <div>#{id} {content}</div>
-            {childrenIds.map((childId) => <span>@{childId} </span>)}
-            <div>작성: {toYYYYMMDD(createdAt)} {updatedAt && `수정: ${toYYYYMMDD(updatedAt)}`}</div>
+    return (
+        <div className={`ml-3 font-semibold ${status === TodoStatus.DONE ? "line-through" : ""}`}>
+            <div>
+                <span>#{id}</span> <span>{content}</span>
+            </div>
+            <div>
+                {childrenIds.map((childId) => (
+                    <span>@{childId}</span>
+                ))}
+            </div>
+            <div>
+                <span>작성: {toYYYYMMDD(createdAt)}</span> <span>{updatedAt && `수정: ${toYYYYMMDD(updatedAt)}`}</span>
+            </div>
         </div>
     );
 };

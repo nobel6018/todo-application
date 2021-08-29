@@ -14,16 +14,18 @@ import "react-datepicker/dist/react-datepicker.css";
 import { toYYYYMMDD } from "../../global/util";
 import { CheckButton } from "../element/CheckButton";
 import { stripIndents } from "common-tags";
+import { Pagination } from "../element/Pagination";
 
 function TodoMain() {
     const [todos, setTodos] = useState<Array<Todo>>([]);
     const [doneTodoIds, setDoneTodoIds] = useState<Array<number>>([]);
 
     const [page, setPage] = useState<number>(0); // dev friendly (start from 0)
-    const [totalPages, setTotalPages] = useState<number>(0);
+    const [totalPages, setTotalPages] = useState<number>(1);
 
     const [content, setContent] = useState<string>();
 
+    const [searchCondition, setSearchCondition] = useState<FindConditionType>();
     const [byContent, setByContent] = useState<string>();
     const [byStatus, setByStatus] = useState<TodoStatus>();
     const [byCreatedDate, setByCreatedDate] = useState<Date>();
@@ -31,9 +33,15 @@ function TodoMain() {
     const [followerId, setFollowerId] = useState<string>();
     const [precedenceIds, setPrecedenceIds] = useState<string>();
 
+    const DEFAULT_SIZE = 7;
     useEffect(() => {
-        getTodos();
+        // getTodos();
+        getTodosPaging(page, DEFAULT_SIZE);
     }, []);
+
+    useEffect(() => {
+        callGetTodosPagingWithSearchCondition(searchCondition);
+    }, [page]);
 
     return (
         // bg
@@ -56,7 +64,7 @@ function TodoMain() {
                     <ul className="mt-4">
                         {todos.map((todo) => (
                             <li key={todo.id} className="flex items-center justify-between mt-3 ">
-                                <div className="flex items-center">
+                                <div key={todo.id} className="flex items-center">
                                     <input
                                         type="checkbox"
                                         name=""
@@ -77,6 +85,9 @@ function TodoMain() {
                         ))}
                     </ul>
                 </div>
+
+                {/* Pagination */}
+                <Pagination totalPages={totalPages} page={page} goNext={goNext} goBefore={goBefore} goPage={goPage} />
 
                 {/* Filter List */}
                 <div>
@@ -168,24 +179,25 @@ function TodoMain() {
         if (content === "") {
             return;
         }
+        setSearchCondition(FindConditionType.CONTENT);
         setByContent(content);
         getTodos(FindConditionType.CONTENT, content);
     }
 
     function GetTodosByStatus(status: TodoStatus) {
+        setSearchCondition(FindConditionType.STATUS);
         setByStatus(status);
         getTodos(FindConditionType.STATUS, status);
     }
 
     function getTodosByCreatedDate(createdDate: Date) {
-        if (!createdDate) {
-            return;
-        }
+        setSearchCondition(FindConditionType.CREATED_DATE);
         setByCreatedDate(createdDate);
         getTodos(FindConditionType.CREATED_DATE, toYYYYMMDD(createdDate));
     }
 
     function clearFindCondition() {
+        setSearchCondition(undefined);
         setByContent("");
         setByStatus(undefined);
         setByCreatedDate(undefined);
@@ -196,19 +208,16 @@ function TodoMain() {
     function getTodos(condition?: FindConditionType, by?: string | TodoStatus) {
         switch (condition) {
             case FindConditionType.STATUS:
-                // @ts-ignore
-                api.getTodos(undefined, by, undefined).then((res) => {
+                api.getTodos(undefined, by as TodoStatus, undefined).then((res) => {
                     setTodosAndSetDoneTodoIds(res);
                 });
                 break;
             case FindConditionType.CONTENT:
-                // @ts-ignore
                 api.getTodos(by, undefined, undefined).then((res) => {
                     setTodosAndSetDoneTodoIds(res);
                 });
                 break;
             case FindConditionType.CREATED_DATE:
-                // @ts-ignore
                 api.getTodos(undefined, undefined, by).then((res) => {
                     setTodosAndSetDoneTodoIds(res);
                 });
@@ -224,22 +233,23 @@ function TodoMain() {
         switch (condition) {
             case FindConditionType.STATUS:
                 api.getTodosPagingByStatus(by as TodoStatus, page, size).then((res) => {
-                    setTodosAndSetDoneTodoIds(res);
+                    setTodosAndDoneTodoIdsAndPagingInfo(res);
                 });
                 break;
             case FindConditionType.CONTENT:
                 api.getTodosPagingByContent(by as string, page, size).then((res) => {
-                    setTodosAndSetDoneTodoIds(res);
+                    setTodosAndDoneTodoIdsAndPagingInfo(res);
                 });
                 break;
             case FindConditionType.CREATED_DATE:
                 api.getTodosPagingByCreatedDate(by as string, page, size).then((res) => {
-                    setTodosAndSetDoneTodoIds(res);
+                    setTodosAndDoneTodoIdsAndPagingInfo(res);
                 });
                 break;
             default:
+                console.log(`default paging call. page: ${page}, size: ${size}`);
                 api.getAllTodosPaging(page, size).then((res) => {
-                    setTodosAndSetDoneTodoIds(res);
+                    setTodosAndDoneTodoIdsAndPagingInfo(res);
                 });
         }
     }
@@ -259,6 +269,24 @@ function TodoMain() {
         setDoneTodoIds(
             res.data.data.filter((todo: Todo) => todo.status === TodoStatus.DONE).map((todo: Todo) => todo.id)
         );
+    }
+
+    function setTodosAndDoneTodoIdsAndPagingInfo(res: AxiosResponse<any>) {
+        console.log(res.data);
+        setTodos(
+            res.data.data.map((todo: Todo) => ({
+                id: todo.id,
+                content: todo.content,
+                children: todo.children,
+                status: todo.status,
+                createdAt: todo.createdAt,
+                updatedAt: todo.updatedAt && new Date(todo.updatedAt),
+            }))
+        );
+        setDoneTodoIds(
+            res.data.data.filter((todo: Todo) => todo.status === TodoStatus.DONE).map((todo: Todo) => todo.id)
+        );
+        setTotalPages(res.data.totalPages);
     }
 
     function createTodo(content: string) {
@@ -348,6 +376,43 @@ function TodoMain() {
     function clearPrecedenceInput() {
         setPrecedenceIds("");
         setFollowerId("");
+    }
+
+    function goNext() {
+        if (page + 1 >= totalPages) {
+            return;
+        }
+        setPage((prevState) => prevState + 1);
+    }
+
+    function goBefore() {
+        if (page - 1 < 0) {
+            return;
+        }
+        setPage((prevState) => prevState - 1);
+    }
+
+    function goPage(page: number) {
+        if (page < 0 || page > totalPages) {
+            return;
+        }
+        setPage(page);
+    }
+
+    function callGetTodosPagingWithSearchCondition(searchCondition?: FindConditionType) {
+        switch (searchCondition) {
+            case FindConditionType.CONTENT:
+                getTodosPaging(page, DEFAULT_SIZE, searchCondition, byContent);
+                break;
+            case FindConditionType.STATUS:
+                getTodosPaging(page, DEFAULT_SIZE, searchCondition, byStatus);
+                break;
+            case FindConditionType.CREATED_DATE:
+                getTodosPaging(page, DEFAULT_SIZE, searchCondition, toYYYYMMDD(byCreatedDate!));
+                break;
+            default:
+                getTodosPaging(page, DEFAULT_SIZE);
+        }
     }
 }
 

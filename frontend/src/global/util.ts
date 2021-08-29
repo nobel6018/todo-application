@@ -13,3 +13,9 @@ export function toYYYYMMDD(date: Date) {
 
     return [year, month, day].join("-");
 }
+
+export function range(num: number) {
+    return Array(num)
+        .fill(0)
+        .map((_, i) => i);
+}
