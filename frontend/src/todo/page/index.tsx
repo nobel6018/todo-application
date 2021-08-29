@@ -35,13 +35,12 @@ function TodoMain() {
 
     const DEFAULT_SIZE = 7;
     useEffect(() => {
-        // getTodos();
         getTodosPaging(page, DEFAULT_SIZE);
     }, []);
 
     useEffect(() => {
-        callGetTodosPagingWithSearchCondition(searchCondition);
-    }, [page]);
+        callGetTodosPagingWithSearchCondition();
+    }, [page, searchCondition]);
 
     return (
         // bg
@@ -111,7 +110,7 @@ function TodoMain() {
                         <input
                             className="border border-gray-800 focus:border-blue-500 rounded w-full py-2 px-3 mr-4 text-black"
                             placeholder="내용으로 찾기"
-                            value={byContent}
+                            value={byContent || ""}
                             onChange={(e) => setByContent(e.target.value)}
                         />
                         <FindButton onClick={() => getTodoByByContentWithPaging(byContent!)} />
@@ -175,49 +174,37 @@ function TodoMain() {
         </div>
     );
 
-    // @Deprecated
-    function getTodoByByContent(content: string) {
-        if (content === "") {
-            return;
-        }
-        setSearchCondition(FindConditionType.CONTENT);
-        setByContent(content);
-        getTodos(FindConditionType.CONTENT, content);
-    }
-
     function getTodoByByContentWithPaging(content: string) {
         if (content === "") {
             return;
         }
+        // hook cannot detect change
+        if (searchCondition === FindConditionType.CONTENT) {
+            getTodosPaging(page, DEFAULT_SIZE, FindConditionType.CONTENT, content);
+        }
+
         setSearchCondition(FindConditionType.CONTENT);
         setByContent(content);
-        getTodosPaging(page, DEFAULT_SIZE, FindConditionType.CONTENT, content);
-    }
-
-    // @Deprecated
-    function GetTodosByStatus(status: TodoStatus) {
-        setSearchCondition(FindConditionType.STATUS);
-        setByStatus(status);
-        getTodos(FindConditionType.STATUS, status);
     }
 
     function GetTodosByStatusWithPaging(status: TodoStatus) {
+        // hook cannot detect change
+        if (searchCondition === FindConditionType.STATUS) {
+            getTodosPaging(page, DEFAULT_SIZE, FindConditionType.STATUS, status);
+        }
+
         setSearchCondition(FindConditionType.STATUS);
         setByStatus(status);
-        getTodosPaging(page, DEFAULT_SIZE, FindConditionType.STATUS, status);
-    }
-
-    // @Deprecated
-    function getTodosByCreatedDate(createdDate: Date) {
-        setSearchCondition(FindConditionType.CREATED_DATE);
-        setByCreatedDate(createdDate);
-        getTodos(FindConditionType.CREATED_DATE, toYYYYMMDD(createdDate));
     }
 
     function getTodosByCreatedDateWithPaging(createdDate: Date) {
+        // hook cannot detect change
+        if (searchCondition === FindConditionType.CREATED_DATE) {
+            getTodosPaging(page, DEFAULT_SIZE, FindConditionType.CREATED_DATE, toYYYYMMDD(createdDate));
+        }
+
         setSearchCondition(FindConditionType.CREATED_DATE);
         setByCreatedDate(createdDate);
-        getTodosPaging(page, DEFAULT_SIZE, FindConditionType.CREATED_DATE, toYYYYMMDD(createdDate));
     }
 
     function clearFindCondition() {
@@ -225,32 +212,6 @@ function TodoMain() {
         setByContent("");
         setByStatus(undefined);
         setByCreatedDate(undefined);
-        getTodos();
-    }
-
-    // @Deprecated
-    function getTodos(condition?: FindConditionType, by?: string | TodoStatus) {
-        switch (condition) {
-            case FindConditionType.STATUS:
-                api.getTodos(undefined, by as TodoStatus, undefined).then((res) => {
-                    setTodosAndSetDoneTodoIds(res);
-                });
-                break;
-            case FindConditionType.CONTENT:
-                api.getTodos(by, undefined, undefined).then((res) => {
-                    setTodosAndSetDoneTodoIds(res);
-                });
-                break;
-            case FindConditionType.CREATED_DATE:
-                api.getTodos(undefined, undefined, by).then((res) => {
-                    setTodosAndSetDoneTodoIds(res);
-                });
-                break;
-            default:
-                api.getTodos().then((res) => {
-                    setTodosAndSetDoneTodoIds(res);
-                });
-        }
     }
 
     function getTodosPaging(page: number, size: number, condition?: FindConditionType, by?: string | TodoStatus) {
@@ -278,24 +239,6 @@ function TodoMain() {
         }
     }
 
-    // @Deprecated
-    function setTodosAndSetDoneTodoIds(res: AxiosResponse<any>) {
-        console.log(res.data);
-        setTodos(
-            res.data.data.map((todo: Todo) => ({
-                id: todo.id,
-                content: todo.content,
-                children: todo.children,
-                status: todo.status,
-                createdAt: todo.createdAt,
-                updatedAt: todo.updatedAt && new Date(todo.updatedAt),
-            }))
-        );
-        setDoneTodoIds(
-            res.data.data.filter((todo: Todo) => todo.status === TodoStatus.DONE).map((todo: Todo) => todo.id)
-        );
-    }
-
     function setTodosAndDoneTodoIdsAndPagingInfo(res: AxiosResponse<any>) {
         console.log(res.data);
         setTodos(
@@ -312,6 +255,9 @@ function TodoMain() {
             res.data.data.filter((todo: Todo) => todo.status === TodoStatus.DONE).map((todo: Todo) => todo.id)
         );
         setTotalPages(res.data.totalPages);
+        if (res.data.totalPages <= page) {
+            setPage(0);
+        }
     }
 
     function createTodo(content: string) {
@@ -321,7 +267,7 @@ function TodoMain() {
         }
         api.createTodo({ content }).then(() => {
             setContent("");
-            getTodos();
+            callGetTodosPagingWithSearchCondition();
         });
     }
 
@@ -350,7 +296,6 @@ function TodoMain() {
 
     function setPrecedence(followerId: number, precedenceIds: Array<number>) {
         api.setPrecedence(followerId, { precedenceIds: precedenceIds }).then(() => {
-            // getTodos();
             const precedences = todos.filter((value) => precedenceIds.includes(value.id)).sort((a, b) => a.id - b.id);
 
             setTodos((prevState) => {
@@ -385,16 +330,7 @@ function TodoMain() {
             );
         }
         api.deleteTodo(id).then(() => {
-            todos.forEach((todo) => {
-                if (todo.children.filter((child) => child.id === id).length > 0) {
-                    getTodos();
-                    return;
-                }
-            });
-
-            setTodos((prevState) => {
-                return prevState.filter((value) => value.id !== id);
-            });
+            callGetTodosPagingWithSearchCondition();
         });
     }
 
@@ -424,7 +360,8 @@ function TodoMain() {
         setPage(page);
     }
 
-    function callGetTodosPagingWithSearchCondition(searchCondition?: FindConditionType) {
+    function callGetTodosPagingWithSearchCondition() {
+        console.log(`searchCondition: ${searchCondition}`);
         switch (searchCondition) {
             case FindConditionType.CONTENT:
                 getTodosPaging(page, DEFAULT_SIZE, searchCondition, byContent);
