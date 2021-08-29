@@ -217,7 +217,7 @@ class TodoServiceTest {
         Todo todo1 = new Todo("Todo1");
         todo1.setId(1L);
         todo1.setCreatedAt(LocalDateTime.of(2021, Month.AUGUST, 20, 13, 10, 30));
-        Todo todo2 = new Todo("Something");
+        Todo todo2 = new Todo("Todo2");
         todo2.setId(2L);
         todo2.setCreatedAt(LocalDateTime.of(2021, Month.AUGUST, 20, 13, 30, 30));
         Todo todo3 = new Todo("Todo3");
@@ -233,12 +233,12 @@ class TodoServiceTest {
 
         when(todoRepository.findAllByCreatedAtBetween(from, to, pageable)).thenReturn(todoPage);
 
-        PageResult<TodoDTO> todos = todoService.getTodosPageable(TodoStatus.DONE, pageable);
+        PageResult<TodoDTO> todos = todoService.getTodosPageable(LocalDate.of(2021, Month.AUGUST, 20), pageable);
 
         // then
         assertThat(todos.getSize()).isEqualTo(2);
         assertThat(todos.getTotalPages()).isEqualTo(1);
-        assertThat(todos.getData().get(0).getContent()).isEqualTo("Todo3");
+        assertThat(todos.getData().get(0).getContent()).isEqualTo("Todo2");
         assertThat(todos.getNumberOfElements()).isEqualTo(2);
     }
 
