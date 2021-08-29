@@ -3,15 +3,15 @@ import { BASE_URL } from "./Config";
 import { TodoStatus } from "../todo/domain/TodoStatus";
 import { CreateTodoDTO } from "../todo/dto/CreateTodoDTO";
 import { SetChildrenDTO } from "../todo/dto/SetChildrenDTO";
-import {UpdateTodoStatusDTO} from "../todo/dto/UpdateTodoStatusDTO";
+import { UpdateTodoStatusDTO } from "../todo/dto/UpdateTodoStatusDTO";
 
 export const apiInstance = axios.create({
     baseURL: BASE_URL,
-    headers: {"Content-Type": "application/json"},
+    headers: { "Content-Type": "application/json" },
     timeout: 3000,
 });
 
-function getTodos(content?: string, status?: TodoStatus, createdDate?: Date) {
+function getTodos(content?: string, status?: TodoStatus, createdDate?: string) {
     return apiInstance.get(`/api/v1/todos`, { params: { content, status, createdDate } });
 }
 

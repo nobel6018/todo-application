@@ -9,6 +9,10 @@ import { FindConditionType } from "../dto/FindConditionType";
 import { AxiosResponse } from "axios";
 import { FindButton } from "../element/FindButton";
 
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
+import { toYYYYMMDD } from "../../global/util";
+
 function TodoMain() {
     const [todos, setTodos] = useState<Array<Todo>>([]);
     const [doneTodoIds, setDoneTodoIds] = useState<Array<number>>([]);
@@ -81,7 +85,7 @@ function TodoMain() {
                         </span>
                     </div>
 
-                    <div className="flex">
+                    <div className="flex mt-4">
                         <input
                             className="border border-gray-800 focus:border-blue-500 rounded w-full py-2 px-3 mr-4 text-black"
                             placeholder="내용으로 찾기"
@@ -91,7 +95,17 @@ function TodoMain() {
                         <FindButton onClick={() => getTodoByByContent(byContent as string)} />
                     </div>
 
-                    <div className="text-right text-red-600">
+                    <div className="flex mt-4">
+                        <DatePicker
+                            selected={byCreatedDate}
+                            dateFormat="yyyy-MM-dd"
+                            placeholderText="yyyy-mm-dd"
+                            onChange={(date) => setByCreatedDate(date as Date)}
+                        />
+                        <FindButton onClick={() => getTodosByCreatedDate(byCreatedDate as Date)} />
+                    </div>
+
+                    <div className="text-right text-red-600 mt-4">
                         <span className="cursor-pointer" onClick={clearFindCondition}>
                             초기화
                         </span>
@@ -102,6 +116,9 @@ function TodoMain() {
     );
 
     function getTodoByByContent(content: string) {
+        if (content === "") {
+            return;
+        }
         setByContent(content);
         getTodos(FindConditionType.CONTENT, content);
     }
@@ -112,18 +129,21 @@ function TodoMain() {
     }
 
     function getTodosByCreatedDate(createdDate: Date) {
+        if (!createdDate) {
+            return;
+        }
         setByCreatedDate(createdDate);
-        getTodos(FindConditionType.CREATED_DATE, createdDate);
+        getTodos(FindConditionType.CREATED_DATE, toYYYYMMDD(createdDate));
     }
 
     function clearFindCondition() {
-        setByContent(undefined);
+        setByContent("");
         setByStatus(undefined);
         setByCreatedDate(undefined);
         getTodos();
     }
 
-    function getTodos(condition?: FindConditionType, by?: string | TodoStatus | Date) {
+    function getTodos(condition?: FindConditionType, by?: string | TodoStatus) {
         switch (condition) {
             case FindConditionType.STATUS:
                 // @ts-ignore
