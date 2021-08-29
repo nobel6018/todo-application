@@ -1,37 +1,37 @@
 import axios from "axios";
-import { BASE_URL } from "./Config";
-import { TodoStatus } from "../todo/domain/TodoStatus";
-import { CreateTodoDTO } from "../todo/dto/CreateTodoDTO";
-import { SetPrecedenceDTO } from "../todo/dto/SetPrecedenceDTO";
-import { UpdateTodoStatusDTO } from "../todo/dto/UpdateTodoStatusDTO";
+import {BASE_URL} from "./Config";
+import {TodoStatus} from "../todo/domain/TodoStatus";
+import {CreateTodoDTO} from "../todo/dto/CreateTodoDTO";
+import {SetPrecedenceDTO} from "../todo/dto/SetPrecedenceDTO";
+import {UpdateTodoStatusDTO} from "../todo/dto/UpdateTodoStatusDTO";
 
 export const apiInstance = axios.create({
     baseURL: BASE_URL,
-    headers: { "Content-Type": "application/json" },
+    headers: {"Content-Type": "application/json"},
     timeout: 3000,
 });
 
 // @Deprecated
 function getTodos(content?: string, status?: TodoStatus, createdDate?: string) {
-    return apiInstance.get(`/api/v1/todos`, { params: { content, status, createdDate } });
+    return apiInstance.get(`/api/v1/todos`, {params: {content, status, createdDate}});
 }
 
 const DEFAULT_SIZE = 7;
 
 function getAllTodosPaging(page: number, size: number = DEFAULT_SIZE) {
-    return apiInstance.get(`/api/v2/todos?page=${page}&size=${size}`);
+    return apiInstance.get(`/api/v2/todos?page=${page}&size=${size}&sort=id,desc`);
 }
 
 function getTodosPagingByContent(content: string, page: number, size: number = DEFAULT_SIZE) {
-    return apiInstance.get(`/api/v2/todos?content=${content}&page=${page}&size=${size}`);
+    return apiInstance.get(`/api/v2/todos?content=${content}&page=${page}&size=${size}&sort=id,desc`);
 }
 
 function getTodosPagingByStatus(status: TodoStatus, page: number, size: number = DEFAULT_SIZE) {
-    return apiInstance.get(`/api/v2/todos?status=${status}&page=${page}&size=${size}`);
+    return apiInstance.get(`/api/v2/todos?status=${status}&page=${page}&size=${size}&sort=id,desc`);
 }
 
 function getTodosPagingByCreatedDate(createdDate: string, page: number, size: number = DEFAULT_SIZE) {
-    return apiInstance.get(`/api/v2/todos?createdDate=${createdDate}&page=${page}&size=${size}`);
+    return apiInstance.get(`/api/v2/todos?createdDate=${createdDate}&page=${page}&size=${size}&sort=id,desc`);
 }
 
 function createTodo(todo: CreateTodoDTO) {
