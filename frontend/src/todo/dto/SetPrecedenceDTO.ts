@@ -1,3 +1,3 @@
 export interface SetPrecedenceDTO {
-    childrenIds: number[];
+    precedenceIds: Array<number>;
 }

@@ -12,6 +12,7 @@ import { FindButton } from "../element/FindButton";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { toYYYYMMDD } from "../../global/util";
+import { CheckButton } from "../element/CheckButton";
 
 function TodoMain() {
     const [todos, setTodos] = useState<Array<Todo>>([]);
@@ -21,6 +22,9 @@ function TodoMain() {
     const [byContent, setByContent] = useState<string>();
     const [byStatus, setByStatus] = useState<TodoStatus>();
     const [byCreatedDate, setByCreatedDate] = useState<Date>();
+
+    const [followerId, setFollowerId] = useState<number>();
+    const [precedenceIds, setPrecedenceIds] = useState<string>();
 
     useEffect(() => {
         getTodos();
@@ -39,7 +43,7 @@ function TodoMain() {
                         value={content}
                         onChange={(e) => setContent(e.target.value)}
                     />
-                    <AddButton onClick={() => createTodo(content as string)} />
+                    <AddButton onClick={() => createTodo(content!)} />
                 </div>
 
                 {/* Todo List */}
@@ -92,7 +96,7 @@ function TodoMain() {
                             value={byContent}
                             onChange={(e) => setByContent(e.target.value)}
                         />
-                        <FindButton onClick={() => getTodoByByContent(byContent as string)} />
+                        <FindButton onClick={() => getTodoByByContent(byContent!)} />
                     </div>
 
                     <div className="flex mt-4">
@@ -102,7 +106,7 @@ function TodoMain() {
                             placeholderText="yyyy-mm-dd"
                             onChange={(date) => setByCreatedDate(date as Date)}
                         />
-                        <FindButton onClick={() => getTodosByCreatedDate(byCreatedDate as Date)} />
+                        <FindButton onClick={() => getTodosByCreatedDate(byCreatedDate!)} />
                     </div>
 
                     <div className="text-right text-red-600 mt-4">
@@ -110,6 +114,39 @@ function TodoMain() {
                             초기화
                         </span>
                     </div>
+                </div>
+
+                {/* Set Precedence */}
+                <hr className="mt-6 border-t-2 border-gray-300 mb-4" />
+                <div className="mb-2">선후 관계설정</div>
+                <div className="flex">
+                    <input
+                        type="text"
+                        className="border border-gray-800 focus:border-blue-500 rounded w-full py-2 px-3 mr-4 text-black"
+                        placeholder="먼저 (예: 1,2)"
+                        value={precedenceIds}
+                        onChange={(e) => setPrecedenceIds(e.target.value.replace(" ", ""))}
+                    />
+                    <input
+                        type="number"
+                        min={1}
+                        className="border border-gray-800 focus:border-blue-500 rounded w-full py-2 px-3 mr-4 text-black"
+                        placeholder="나중 (예: 3)"
+                        value={followerId}
+                        onChange={(e) => setFollowerId(parseInt(e.target.value))}
+                    />
+                    <CheckButton
+                        onClick={() => {
+                            const precedenceIdsAsArray: number[] | undefined = precedenceIds
+                                ?.replace(/,$/, "")
+                                ?.split(",")
+                                .map((value) => parseInt(value));
+                            if (precedenceIdsAsArray === undefined) {
+                                return;
+                            }
+                            setPrecedence(followerId!, precedenceIdsAsArray!);
+                        }}
+                    />
                 </div>
             </div>
         </div>
@@ -221,8 +258,8 @@ function TodoMain() {
         return status === TodoStatus.DONE ? TodoStatus.NOT_YET : TodoStatus.DONE;
     }
 
-    function setPrecedence(followerId: number, precedenceId: number) {
-        api.setPrecedence(followerId, { childrenIds: [precedenceId] }).then(() => {
+    function setPrecedence(followerId: number, precedenceIds: Array<number>) {
+        api.setPrecedence(followerId, { precedenceIds: precedenceIds }).then(() => {
             getTodos();
             // setTodos((prevState) => {
             //     return prevState.map((todo) => {
