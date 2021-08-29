@@ -2,6 +2,10 @@ package com.cloudy.todo.todo.domain;
 
 import com.cloudy.todo.todo.dto.request.TodoWithoutChildrenDTO;
 import com.cloudy.todo.todo.dto.response.TodoDTO;
+import com.cloudy.todo.todo.exception.ChildIsDoingException;
+import com.cloudy.todo.todo.exception.ParentIsDoneException;
+import com.cloudy.todo.todo.exception.TodoAlreadyDoneException;
+import com.cloudy.todo.todo.exception.TodoAlreadyNotDoingException;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -65,13 +69,11 @@ public class Todo {
 
     public void finish() {
         if (this.status == TodoStatus.DONE) {
-            // Todo: business exception
-            throw new RuntimeException("The todo is already done");
+            throw new TodoAlreadyDoneException("The todo is already done");
         }
         for (Todo child : this.children) {
             if (child.getStatus() == TodoStatus.NOT_YET) {
-                // Todo: business exception
-                throw new RuntimeException("Child (id: " + child.getId() + ") is not done");
+                throw new ChildIsDoingException("Child (id: " + child.getId() + ") is doing");
             }
         }
 
@@ -81,10 +83,10 @@ public class Todo {
 
     public void doing() {
         if (this.status == TodoStatus.NOT_YET) {
-            throw new RuntimeException("The todo is not done");
+            throw new TodoAlreadyNotDoingException("The todo is doing");
         }
         if (this.parent != null && this.parent.getStatus() == TodoStatus.DONE) {
-            throw new RuntimeException("Parent (id: " + this.parent.getId() + ") is done");
+            throw new ParentIsDoneException("Parent (id: " + this.parent.getId() + ") is done");
         }
 
         this.status = TodoStatus.NOT_YET;
@@ -93,8 +95,7 @@ public class Todo {
 
     public TodoDTO toDTO() {
         if (this.id == null) {
-            // Todo: business exception
-            throw new IllegalArgumentException("Id should not be null");
+            throw new IllegalArgumentException("Todo id should not be null");
         }
 
         return new TodoDTO(
@@ -109,8 +110,7 @@ public class Todo {
 
     public TodoWithoutChildrenDTO toBasicDTO() {
         if (this.id == null) {
-            // Todo: business exception
-            throw new IllegalArgumentException("Id should not be null");
+            throw new IllegalArgumentException("Todo id should not be null");
         }
 
         return new TodoWithoutChildrenDTO(

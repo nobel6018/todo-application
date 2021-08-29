@@ -22,4 +22,40 @@ public class TodoExceptionHandler {
 
         return new ResponseEntity<>(errorResult, HttpStatus.BAD_REQUEST);
     }
+
+    @ExceptionHandler
+    public ResponseEntity<ErrorResult> handleTooManySpeakerPostRequest(ParentIsDoneException e) {
+        log.info("[ParentIsDoneException] e", e);
+
+        ErrorResult errorResult = new ErrorResult("ParentIsDoneException", e.getMessage());
+
+        return new ResponseEntity<>(errorResult, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler
+    public ResponseEntity<ErrorResult> handleTooManySpeakerPostRequest(ChildIsDoingException e) {
+        log.info("[ChildIsDoingException] e", e);
+
+        ErrorResult errorResult = new ErrorResult("ChildIsDoingException", e.getMessage());
+
+        return new ResponseEntity<>(errorResult, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler
+    public ResponseEntity<ErrorResult> handleTooManySpeakerPostRequest(TodoAlreadyDoneException e) {
+        log.info("[TodoAlreadyDoneException] e", e);
+
+        ErrorResult errorResult = new ErrorResult("TodoAlreadyDoneException", e.getMessage());
+
+        return new ResponseEntity<>(errorResult, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler
+    public ResponseEntity<ErrorResult> handleTooManySpeakerPostRequest(TodoAlreadyNotDoingException e) {
+        log.info("[TodoAlreadyNotDoingException] e", e);
+
+        ErrorResult errorResult = new ErrorResult("TodoAlreadyNotDoingException", e.getMessage());
+
+        return new ResponseEntity<>(errorResult, HttpStatus.BAD_REQUEST);
+    }
 }
