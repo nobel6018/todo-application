@@ -2,7 +2,7 @@ import axios from "axios";
 import { BASE_URL } from "./Config";
 import { TodoStatus } from "../todo/domain/TodoStatus";
 import { CreateTodoDTO } from "../todo/dto/CreateTodoDTO";
-import { SetChildrenDTO } from "../todo/dto/SetChildrenDTO";
+import { SetPrecedenceDTO } from "../todo/dto/SetPrecedenceDTO";
 import { UpdateTodoStatusDTO } from "../todo/dto/UpdateTodoStatusDTO";
 
 export const apiInstance = axios.create({
@@ -23,8 +23,8 @@ function updateTodoStatus(todoId: number, status: UpdateTodoStatusDTO) {
     return apiInstance.patch(`/api/v1/todos/${todoId}/status`, status);
 }
 
-function setChildren(parentId: number, childrenIds: SetChildrenDTO) {
-    return apiInstance.patch(`/api/v1/todos/${parentId}/link`, childrenIds);
+function setPrecedence(followerId: number, precedenceIds: SetPrecedenceDTO) {
+    return apiInstance.patch(`/api/v1/todos/${followerId}/precedence`, precedenceIds);
 }
 
 function deleteTodo(id: number) {
@@ -35,6 +35,6 @@ export default {
     getTodos,
     createTodo,
     updateTodoStatus,
-    setChildren,
+    setPrecedence,
     deleteTodo,
 };

@@ -69,8 +69,8 @@ function TodoMain() {
                     </ul>
 
                     {/* Filter List */}
-                    <hr className="mt-6 border-t-2 border-gray-300" />
-                    <div className="mt-4">
+                    <hr className="mt-6 border-t-2 border-gray-300 mb-4" />
+                    <div>
                         <span
                             className="text-blue-600 cursor-pointer"
                             onClick={() => GetTodosByStatus(TodoStatus.DONE)}
@@ -222,7 +222,7 @@ function TodoMain() {
     }
 
     function setPrecedence(followerId: number, precedenceId: number) {
-        api.setChildren(followerId, { childrenIds: [precedenceId] }).then(() => {
+        api.setPrecedence(followerId, { childrenIds: [precedenceId] }).then(() => {
             getTodos();
             // setTodos((prevState) => {
             //     return prevState.map((todo) => {
