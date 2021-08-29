@@ -95,13 +95,13 @@ function TodoMain() {
                     <div>
                         <span
                             className="text-blue-600 cursor-pointer"
-                            onClick={() => GetTodosByStatus(TodoStatus.DONE)}
+                            onClick={() => GetTodosByStatusWithPaging(TodoStatus.DONE)}
                         >
                             완료
                         </span>{" "}
                         <span
                             className="text-blue-600 cursor-pointer"
-                            onClick={() => GetTodosByStatus(TodoStatus.NOT_YET)}
+                            onClick={() => GetTodosByStatusWithPaging(TodoStatus.NOT_YET)}
                         >
                             진행중
                         </span>
@@ -114,7 +114,7 @@ function TodoMain() {
                             value={byContent}
                             onChange={(e) => setByContent(e.target.value)}
                         />
-                        <FindButton onClick={() => getTodoByByContent(byContent!)} />
+                        <FindButton onClick={() => getTodoByByContentWithPaging(byContent!)} />
                     </div>
 
                     <div className="flex mt-4">
@@ -124,7 +124,7 @@ function TodoMain() {
                             placeholderText="yyyy-mm-dd"
                             onChange={(date) => setByCreatedDate(date as Date)}
                         />
-                        <FindButton onClick={() => getTodosByCreatedDate(byCreatedDate!)} />
+                        <FindButton onClick={() => getTodosByCreatedDateWithPaging(byCreatedDate!)} />
                     </div>
 
                     <div className="text-right text-red-600 mt-4">
@@ -175,6 +175,7 @@ function TodoMain() {
         </div>
     );
 
+    // @Deprecated
     function getTodoByByContent(content: string) {
         if (content === "") {
             return;
@@ -184,16 +185,39 @@ function TodoMain() {
         getTodos(FindConditionType.CONTENT, content);
     }
 
+    function getTodoByByContentWithPaging(content: string) {
+        if (content === "") {
+            return;
+        }
+        setSearchCondition(FindConditionType.CONTENT);
+        setByContent(content);
+        getTodosPaging(page, DEFAULT_SIZE, FindConditionType.CONTENT, content);
+    }
+
+    // @Deprecated
     function GetTodosByStatus(status: TodoStatus) {
         setSearchCondition(FindConditionType.STATUS);
         setByStatus(status);
         getTodos(FindConditionType.STATUS, status);
     }
 
+    function GetTodosByStatusWithPaging(status: TodoStatus) {
+        setSearchCondition(FindConditionType.STATUS);
+        setByStatus(status);
+        getTodosPaging(page, DEFAULT_SIZE, FindConditionType.STATUS, status);
+    }
+
+    // @Deprecated
     function getTodosByCreatedDate(createdDate: Date) {
         setSearchCondition(FindConditionType.CREATED_DATE);
         setByCreatedDate(createdDate);
         getTodos(FindConditionType.CREATED_DATE, toYYYYMMDD(createdDate));
+    }
+
+    function getTodosByCreatedDateWithPaging(createdDate: Date) {
+        setSearchCondition(FindConditionType.CREATED_DATE);
+        setByCreatedDate(createdDate);
+        getTodosPaging(page, DEFAULT_SIZE, FindConditionType.CREATED_DATE, toYYYYMMDD(createdDate));
     }
 
     function clearFindCondition() {
@@ -254,6 +278,7 @@ function TodoMain() {
         }
     }
 
+    // @Deprecated
     function setTodosAndSetDoneTodoIds(res: AxiosResponse<any>) {
         console.log(res.data);
         setTodos(
