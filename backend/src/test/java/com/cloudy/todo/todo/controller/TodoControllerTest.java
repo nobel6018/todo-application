@@ -1,8 +1,10 @@
 package com.cloudy.todo.todo.controller;
 
+import com.cloudy.todo.global.dto.PageResult;
 import com.cloudy.todo.todo.domain.Todo;
 import com.cloudy.todo.todo.domain.TodoStatus;
 import com.cloudy.todo.todo.dto.request.CreateTodoDTO;
+import com.cloudy.todo.todo.dto.response.TodoDTO;
 import com.cloudy.todo.todo.repository.TodoRepository;
 import com.cloudy.todo.todo.service.TodoService;
 import org.junit.jupiter.api.Disabled;
@@ -10,6 +12,9 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -151,6 +156,129 @@ class TodoControllerTest {
             .andExpect(jsonPath("$.data[1]['id']", is(1)))
             .andExpect(jsonPath("$.data[1]['content']", is("Todo1")))
             .andExpect(jsonPath("$.data[1]['status']", is("NOT_YET")))
+            .andDo(print());
+    }
+
+    @Test
+    public void getTodosWithPaginationTest() throws Exception {
+        // given
+        Todo todo1 = new Todo("Todo1");
+        todo1.setId(1L);
+        Todo todo2 = new Todo("Todo2");
+        todo2.setId(2L);
+        Todo todo3 = new Todo("Todo3");
+        todo3.setId(3L);
+
+        // when
+        Pageable pageable = PageRequest.of(0, 2, Sort.by("id").descending());
+        PageResult<TodoDTO> pageResult = new PageResult<>(List.of(todo3.toDTO(), todo2.toDTO()), 2, 2, 3, 2);
+
+        when(todoService.getTodosPageable(pageable)).thenReturn(pageResult);
+
+        // then
+        mockMvc.perform(get("/api/v2/todos?page=0&size=2&sort=id,desc").contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.data[0]['id']", is(3)))
+            .andExpect(jsonPath("$.data[0]['content']", is("Todo3")))
+            .andExpect(jsonPath("$.totalPages", is(2)))
+            .andExpect(jsonPath("$.totalElements", is(3)))
+            .andExpect(jsonPath("$.numberOfElements", is(2)))
+            .andDo(print());
+    }
+
+    @Test
+    public void getTodosByContentWithPaginationTest() throws Exception {
+        // given
+        Todo todo1 = new Todo("Todo1");
+        todo1.setId(1L);
+        Todo todo2 = new Todo("Todo2");
+        todo2.setId(2L);
+        Todo todo3 = new Todo("Something");
+        todo3.setId(3L);
+
+        // when
+        Pageable pageable = PageRequest.of(0, 2, Sort.by("id").descending());
+        PageResult<TodoDTO> pageResult = new PageResult<>(List.of(todo2.toDTO(), todo1.toDTO()), 2, 1, 2, 2);
+
+        when(todoService.getTodosPageable("Todo", pageable)).thenReturn(pageResult);
+
+        // then
+        mockMvc.perform(get("/api/v2/todos?content=Todo&page=0&size=2&sort=id,desc").contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.data[0]['id']", is(2)))
+            .andExpect(jsonPath("$.data[0]['content']", is("Todo2")))
+            .andExpect(jsonPath("$.totalPages", is(1)))
+            .andExpect(jsonPath("$.totalElements", is(2)))
+            .andExpect(jsonPath("$.numberOfElements", is(2)))
+            .andDo(print());
+    }
+
+
+    @Test
+    public void getTodosByStatusWithPaginationTest() throws Exception {
+        // given
+        Todo todo1 = new Todo("Todo1");
+        todo1.setId(1L);
+        todo1.setStatus(TodoStatus.DONE);
+        Todo todo2 = new Todo("Todo2");
+        todo2.setId(2L);
+        Todo todo3 = new Todo("Todo3");
+        todo3.setId(3L);
+
+        // when
+        Pageable pageable = PageRequest.of(0, 2, Sort.by("id").descending());
+        PageResult<TodoDTO> pageResult1 = new PageResult<>(List.of(todo3.toDTO(), todo2.toDTO()), 2, 1, 2, 2);
+        when(todoService.getTodosPageable(TodoStatus.NOT_YET, pageable)).thenReturn(pageResult1);
+
+        PageResult<TodoDTO> pageResult2 = new PageResult<>(List.of(todo1.toDTO()), 2, 1, 1, 1);
+        when(todoService.getTodosPageable(TodoStatus.DONE, pageable)).thenReturn(pageResult2);
+
+        // then
+        mockMvc.perform(get("/api/v2/todos?status=NOT_YET&page=0&size=2&sort=id,desc").contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.data[0]['id']", is(3)))
+            .andExpect(jsonPath("$.data[0]['content']", is("Todo3")))
+            .andExpect(jsonPath("$.totalPages", is(1)))
+            .andExpect(jsonPath("$.totalElements", is(2)))
+            .andExpect(jsonPath("$.numberOfElements", is(2)))
+            .andDo(print());
+
+        mockMvc.perform(get("/api/v2/todos?status=DONE&page=0&size=2&sort=id,desc").contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.data[0]['id']", is(1)))
+            .andExpect(jsonPath("$.data[0]['content']", is("Todo1")))
+            .andExpect(jsonPath("$.totalPages", is(1)))
+            .andExpect(jsonPath("$.totalElements", is(1)))
+            .andExpect(jsonPath("$.numberOfElements", is(1)))
+            .andDo(print());
+    }
+
+    @Test
+    public void getTodosByCreatedDateWithPaginationTest() throws Exception {
+        // given
+        Todo todo1 = new Todo("Todo1");
+        todo1.setId(1L);
+        todo1.setCreatedAt(LocalDateTime.of(2021, Month.AUGUST, 20, 15, 30, 10));
+        Todo todo2 = new Todo("Todo2");
+        todo2.setId(2L);
+        todo2.setCreatedAt(LocalDateTime.of(2021, Month.AUGUST, 20, 16, 30, 10));
+        Todo todo3 = new Todo("Todo3");
+        todo3.setId(3L);
+
+        // when
+        Pageable pageable = PageRequest.of(0, 2, Sort.by("id").descending());
+        PageResult<TodoDTO> pageResult = new PageResult<>(List.of(todo2.toDTO(), todo1.toDTO()), 2, 1, 2, 2);
+
+        when(todoService.getTodosPageable(LocalDate.of(2021, Month.AUGUST, 20), pageable)).thenReturn(pageResult);
+
+        // then
+        mockMvc.perform(get("/api/v2/todos?createdDate=2021-08-20&page=0&size=2&sort=id,desc").contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.data[0]['id']", is(2)))
+            .andExpect(jsonPath("$.data[0]['content']", is("Todo2")))
+            .andExpect(jsonPath("$.totalPages", is(1)))
+            .andExpect(jsonPath("$.totalElements", is(2)))
+            .andExpect(jsonPath("$.numberOfElements", is(2)))
             .andDo(print());
     }
 
