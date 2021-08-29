@@ -18,6 +18,10 @@ import { stripIndents } from "common-tags";
 function TodoMain() {
     const [todos, setTodos] = useState<Array<Todo>>([]);
     const [doneTodoIds, setDoneTodoIds] = useState<Array<number>>([]);
+
+    const [page, setPage] = useState<number>(0); // dev friendly (start from 0)
+    const [totalPages, setTotalPages] = useState<number>(0);
+
     const [content, setContent] = useState<string>();
 
     const [byContent, setByContent] = useState<string>();
@@ -72,8 +76,10 @@ function TodoMain() {
                             </li>
                         ))}
                     </ul>
+                </div>
 
-                    {/* Filter List */}
+                {/* Filter List */}
+                <div>
                     <hr className="mt-6 border-t-2 border-gray-300 mb-4" />
                     <div>
                         <span
@@ -186,34 +192,59 @@ function TodoMain() {
         getTodos();
     }
 
+    // @Deprecated
     function getTodos(condition?: FindConditionType, by?: string | TodoStatus) {
         switch (condition) {
             case FindConditionType.STATUS:
                 // @ts-ignore
                 api.getTodos(undefined, by, undefined).then((res) => {
-                    getTodoCommonLogic(res);
+                    setTodosAndSetDoneTodoIds(res);
                 });
                 break;
             case FindConditionType.CONTENT:
                 // @ts-ignore
                 api.getTodos(by, undefined, undefined).then((res) => {
-                    getTodoCommonLogic(res);
+                    setTodosAndSetDoneTodoIds(res);
                 });
                 break;
             case FindConditionType.CREATED_DATE:
                 // @ts-ignore
                 api.getTodos(undefined, undefined, by).then((res) => {
-                    getTodoCommonLogic(res);
+                    setTodosAndSetDoneTodoIds(res);
                 });
                 break;
             default:
                 api.getTodos().then((res) => {
-                    getTodoCommonLogic(res);
+                    setTodosAndSetDoneTodoIds(res);
                 });
         }
     }
 
-    function getTodoCommonLogic(res: AxiosResponse<any>) {
+    function getTodosPaging(page: number, size: number, condition?: FindConditionType, by?: string | TodoStatus) {
+        switch (condition) {
+            case FindConditionType.STATUS:
+                api.getTodosPagingByStatus(by as TodoStatus, page, size).then((res) => {
+                    setTodosAndSetDoneTodoIds(res);
+                });
+                break;
+            case FindConditionType.CONTENT:
+                api.getTodosPagingByContent(by as string, page, size).then((res) => {
+                    setTodosAndSetDoneTodoIds(res);
+                });
+                break;
+            case FindConditionType.CREATED_DATE:
+                api.getTodosPagingByCreatedDate(by as string, page, size).then((res) => {
+                    setTodosAndSetDoneTodoIds(res);
+                });
+                break;
+            default:
+                api.getAllTodosPaging(page, size).then((res) => {
+                    setTodosAndSetDoneTodoIds(res);
+                });
+        }
+    }
+
+    function setTodosAndSetDoneTodoIds(res: AxiosResponse<any>) {
         console.log(res.data);
         setTodos(
             res.data.data.map((todo: Todo) => ({
