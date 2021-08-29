@@ -312,7 +312,7 @@ class TodoServiceTest {
         // then
         assertThatThrownBy(() -> todoService.updateStatus(todo1, TodoStatus.NOT_YET))
             .isInstanceOf(RuntimeException.class)
-            .hasMessage("The todo is not done");
+            .hasMessage("The todo is doing");
 
         assertThatThrownBy(() -> todoService.updateStatus(todo2, TodoStatus.DONE))
             .isInstanceOf(RuntimeException.class)
@@ -333,7 +333,7 @@ class TodoServiceTest {
         // then
         assertThatThrownBy(() -> todoService.updateStatus(parent, TodoStatus.DONE))
             .isInstanceOf(RuntimeException.class)
-            .hasMessage("Child (id: 2) is not done");
+            .hasMessage("Child (id: 2) is doing");
 
         child.finish();
         parent.finish();
