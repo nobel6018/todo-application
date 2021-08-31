@@ -15,8 +15,8 @@
 ```bash
 $ git clone https://github.com/nobel6018/todo-application.git
 $ cd todo-application/backend
-$ ./gradlew clean test build
-$ java -jar -Dspring.profiles.active=local build/libs/todo-0.0.1-SNAPSHOT.jar
+$ ./gradlew clean build
+$ java -jar -Dspring.profiles.active=default build/libs/todo-0.0.1-SNAPSHOT.jar
 ```
 
 - 서버는 h2 In-Memory로 실행합니다
