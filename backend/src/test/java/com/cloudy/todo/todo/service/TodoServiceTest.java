@@ -6,6 +6,7 @@ import com.cloudy.todo.todo.domain.TodoStatus;
 import com.cloudy.todo.todo.dto.request.CreateTodoDTO;
 import com.cloudy.todo.todo.dto.request.TodoWithoutChildrenDTO;
 import com.cloudy.todo.todo.dto.response.TodoDTO;
+import com.cloudy.todo.todo.exception.*;
 import com.cloudy.todo.todo.repository.TodoRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -19,6 +20,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.Month;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -279,6 +281,21 @@ class TodoServiceTest {
     }
 
     @Test
+    public void setPrecedenceWhenNoTodoExceptionTest() {
+        // given
+        Todo todo1 = new Todo("Todo1");
+        todo1.setId(1L);
+
+        // when
+        when(todoRepository.findById(1L)).thenReturn(Optional.of(todo1));
+
+        // then
+        assertThatThrownBy(() -> todoService.setPrecedence(1L, List.of(2L, 3L)))
+            .isInstanceOf(TodoNotFoundException.class)
+            .hasMessage("There are no Todos where ids: [2, 3]");
+    }
+
+    @Test
     public void updateStatusTest() {
         // given
         Todo todo1 = new Todo("Todo1");
@@ -311,11 +328,11 @@ class TodoServiceTest {
 
         // then
         assertThatThrownBy(() -> todoService.updateStatus(todo1, TodoStatus.NOT_YET))
-            .isInstanceOf(RuntimeException.class)
-            .hasMessage("The todo is doing");
+            .isInstanceOf(TodoAlreadyDoingException.class)
+            .hasMessage("The todo is already doing");
 
         assertThatThrownBy(() -> todoService.updateStatus(todo2, TodoStatus.DONE))
-            .isInstanceOf(RuntimeException.class)
+            .isInstanceOf(TodoAlreadyDoneException.class)
             .hasMessage("The todo is already done");
     }
 
@@ -332,13 +349,13 @@ class TodoServiceTest {
 
         // then
         assertThatThrownBy(() -> todoService.updateStatus(parent, TodoStatus.DONE))
-            .isInstanceOf(RuntimeException.class)
+            .isInstanceOf(ChildIsDoingException.class)
             .hasMessage("Child (id: 2) is doing");
 
         child.finish();
         parent.finish();
         assertThatThrownBy(() -> todoService.updateStatus(child, TodoStatus.NOT_YET))
-            .isInstanceOf(RuntimeException.class)
+            .isInstanceOf(ParentIsDoneException.class)
             .hasMessage("Parent (id: 1) is done");
     }
 

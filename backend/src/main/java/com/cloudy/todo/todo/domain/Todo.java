@@ -4,8 +4,8 @@ import com.cloudy.todo.todo.dto.request.TodoWithoutChildrenDTO;
 import com.cloudy.todo.todo.dto.response.TodoDTO;
 import com.cloudy.todo.todo.exception.ChildIsDoingException;
 import com.cloudy.todo.todo.exception.ParentIsDoneException;
+import com.cloudy.todo.todo.exception.TodoAlreadyDoingException;
 import com.cloudy.todo.todo.exception.TodoAlreadyDoneException;
-import com.cloudy.todo.todo.exception.TodoAlreadyNotDoingException;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -83,7 +83,7 @@ public class Todo {
 
     public void doing() {
         if (this.status == TodoStatus.NOT_YET) {
-            throw new TodoAlreadyNotDoingException("The todo is doing");
+            throw new TodoAlreadyDoingException("The todo is already doing");
         }
         if (this.parent != null && this.parent.getStatus() == TodoStatus.DONE) {
             throw new ParentIsDoneException("Parent (id: " + this.parent.getId() + ") is done");

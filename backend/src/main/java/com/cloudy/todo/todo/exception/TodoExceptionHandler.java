@@ -51,7 +51,7 @@ public class TodoExceptionHandler {
     }
 
     @ExceptionHandler
-    public ResponseEntity<ErrorResult> handleTooManySpeakerPostRequest(TodoAlreadyNotDoingException e) {
+    public ResponseEntity<ErrorResult> handleTooManySpeakerPostRequest(TodoAlreadyDoingException e) {
         log.info("[TodoAlreadyNotDoingException] e", e);
 
         ErrorResult errorResult = new ErrorResult("TodoAlreadyNotDoingException", e.getMessage());

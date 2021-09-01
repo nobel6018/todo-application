@@ -116,13 +116,24 @@ public class TodoService {
     public TodoDTO setPrecedence(Long followerId, List<Long> precedenceIds) {
         Todo parent = todoRepository.findById(followerId)
             .orElseThrow(() -> new TodoNotFoundException("There is no Todo where id: " + followerId));
-        Iterable<Todo> children = todoRepository.findAllById(precedenceIds);
+
+        List<Todo> children = (List<Todo>) todoRepository.findAllById(precedenceIds);
+        if (children.size() != precedenceIds.size()) {
+            List<Long> childrenIds = children.stream().map(Todo::getId).collect(Collectors.toList());
+            List<Long> differences = listDifference(precedenceIds, childrenIds);
+
+            throw new TodoNotFoundException("There are no Todos where ids: " + differences);
+        }
 
         return setPrecedence(parent, children);
     }
 
+    private List<Long> listDifference(final List<Long> origin, final List<Long> subset) {
+        return origin.stream().filter(it -> !subset.contains(it)).collect(Collectors.toList());
+    }
+
     @Transactional
-    public TodoDTO setPrecedence(Todo parent, Iterable<Todo> children) {
+    public TodoDTO setPrecedence(Todo parent, List<Todo> children) {
         for (Todo child : children) {
             parent.addChildren(child);
         }
