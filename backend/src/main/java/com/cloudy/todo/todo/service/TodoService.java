@@ -113,19 +113,19 @@ public class TodoService {
     }
 
     @Transactional
-    public TodoDTO setPrecedence(Long followerId, List<Long> precedenceIds) {
-        Todo parent = todoRepository.findById(followerId)
-            .orElseThrow(() -> new TodoNotFoundException("There is no Todo where id: " + followerId));
+    public TodoDTO setPrecedence(Long postTodoId, List<Long> preTodoIds) {
+        Todo postTodo = todoRepository.findById(postTodoId)
+            .orElseThrow(() -> new TodoNotFoundException("There is no Todo where id: " + postTodoId));
 
-        List<Todo> children = (List<Todo>) todoRepository.findAllById(precedenceIds);
-        if (children.size() != precedenceIds.size()) {
-            List<Long> childrenIds = children.stream().map(Todo::getId).collect(Collectors.toList());
-            List<Long> differences = listDifference(precedenceIds, childrenIds);
+        List<Todo> preTodos = (List<Todo>) todoRepository.findAllById(preTodoIds);
+        if (preTodos.size() != preTodoIds.size()) {
+            List<Long> childrenIds = preTodos.stream().map(Todo::getId).collect(Collectors.toList());
+            List<Long> differences = listDifference(preTodoIds, childrenIds);
 
             throw new TodoNotFoundException("There are no Todos where ids: " + differences);
         }
 
-        return setPrecedence(parent, children);
+        return setPrecedence(postTodo, preTodos);
     }
 
     private List<Long> listDifference(final List<Long> origin, final List<Long> subset) {
@@ -133,12 +133,12 @@ public class TodoService {
     }
 
     @Transactional
-    public TodoDTO setPrecedence(Todo parent, List<Todo> children) {
-        for (Todo child : children) {
-            parent.addChildren(child);
+    public TodoDTO setPrecedence(Todo postTodo, List<Todo> preTodos) {
+        for (Todo preTodo : preTodos) {
+            postTodo.addChildren(preTodo);
         }
 
-        return parent.toDTO();
+        return postTodo.toDTO();
     }
 
     @Transactional
