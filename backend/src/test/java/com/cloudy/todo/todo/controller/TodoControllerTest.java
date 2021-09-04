@@ -282,6 +282,32 @@ class TodoControllerTest {
             .andDo(print());
     }
 
+    @Test
+    public void getTodoV2ParameterInvalidationTest() throws Exception {
+        // given
+
+        // when
+
+        // then
+        mockMvc.perform(get("/api/v2/todos?createdDate=2021-08-zz").contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.code", is("IllegalArgumentException")))
+            .andExpect(jsonPath("$.message", is("Parse attempt failed for value [2021-08-zz]")))
+            .andDo(print());
+
+        mockMvc.perform(get("/api/v2/todos?status=BLABLA").contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.code", is("IllegalArgumentException")))
+            .andExpect(jsonPath("$.message", is("No enum constant com.cloudy.todo.todo.domain.TodoStatus.BLABLA")))
+            .andDo(print());
+
+//        mockMvc.perform(get("/api/v2/todos?content=이것을찾아주세요이것을찾아주세요").contentType(MediaType.APPLICATION_JSON))
+//            .andExpect(status().isBadRequest())
+//            .andExpect(jsonPath("$.code", is("IllegalArgumentException")))
+//            .andExpect(jsonPath("$.message", is("Parse attempt failed for value [2021-08-zz]")))
+//            .andDo(print());
+    }
+
     // Todo: implement, and test PATCH children link controller too
     @Test
     @Disabled
