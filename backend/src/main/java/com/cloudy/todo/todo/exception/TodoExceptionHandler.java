@@ -18,7 +18,7 @@ public class TodoExceptionHandler {
     public ResponseEntity<ErrorResult> handleTooManySpeakerPostRequest(TodoNotFoundException e) {
         log.info("[TodoNotFoundException] e", e);
 
-        ErrorResult errorResult = new ErrorResult("TodoNotFoundException", e.getMessage());
+        ErrorResult errorResult = new ErrorResult(400, "TodoNotFoundException", null);
 
         return new ResponseEntity<>(errorResult, HttpStatus.BAD_REQUEST);
     }
@@ -27,7 +27,7 @@ public class TodoExceptionHandler {
     public ResponseEntity<ErrorResult> handleTooManySpeakerPostRequest(ParentIsDoneException e) {
         log.info("[ParentIsDoneException] e", e);
 
-        ErrorResult errorResult = new ErrorResult("ParentIsDoneException", e.getMessage());
+        ErrorResult errorResult = new ErrorResult(400, "ParentIsDoneException", null);
 
         return new ResponseEntity<>(errorResult, HttpStatus.BAD_REQUEST);
     }
@@ -36,7 +36,7 @@ public class TodoExceptionHandler {
     public ResponseEntity<ErrorResult> handleTooManySpeakerPostRequest(ChildIsDoingException e) {
         log.info("[ChildIsDoingException] e", e);
 
-        ErrorResult errorResult = new ErrorResult("ChildIsDoingException", e.getMessage());
+        ErrorResult errorResult = new ErrorResult(400, "ChildIsDoingException", null);
 
         return new ResponseEntity<>(errorResult, HttpStatus.BAD_REQUEST);
     }
@@ -45,7 +45,7 @@ public class TodoExceptionHandler {
     public ResponseEntity<ErrorResult> handleTooManySpeakerPostRequest(TodoAlreadyDoneException e) {
         log.info("[TodoAlreadyDoneException] e", e);
 
-        ErrorResult errorResult = new ErrorResult("TodoAlreadyDoneException", e.getMessage());
+        ErrorResult errorResult = new ErrorResult(400, "TodoAlreadyDoneException", null);
 
         return new ResponseEntity<>(errorResult, HttpStatus.BAD_REQUEST);
     }
@@ -54,7 +54,7 @@ public class TodoExceptionHandler {
     public ResponseEntity<ErrorResult> handleTooManySpeakerPostRequest(TodoAlreadyDoingException e) {
         log.info("[TodoAlreadyNotDoingException] e", e);
 
-        ErrorResult errorResult = new ErrorResult("TodoAlreadyNotDoingException", e.getMessage());
+        ErrorResult errorResult = new ErrorResult(400, "TodoAlreadyNotDoingException", null);
 
         return new ResponseEntity<>(errorResult, HttpStatus.BAD_REQUEST);
     }

@@ -1,6 +1,7 @@
 package com.cloudy.todo.global.exception;
 
 import com.cloudy.todo.global.dto.ErrorResult;
+import com.cloudy.todo.global.exception.exceptions.HttpException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -17,8 +18,15 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResult> handleTooManySpeakerPostRequest(IllegalArgumentException e) {
         log.info("[IllegalArgumentException] e", e);
 
-        ErrorResult errorResult = new ErrorResult("IllegalArgumentException", e.getMessage());
+        ErrorResult errorResult = new ErrorResult(400, e.getMessage(), null);
 
         return new ResponseEntity<>(errorResult, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler
+    public ResponseEntity<ErrorResult> handleHttpException(HttpException e) {
+        ErrorResult errorResult = new ErrorResult(e.getStatusCode(), e.getCustomMessage(), e.getErrorCode());
+
+        return new ResponseEntity<>(errorResult, HttpStatus.valueOf(e.getStatusCode()));
     }
 }

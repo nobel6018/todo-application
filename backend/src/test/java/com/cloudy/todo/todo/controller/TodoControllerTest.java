@@ -7,6 +7,7 @@ import com.cloudy.todo.todo.dto.request.CreateTodoDTO;
 import com.cloudy.todo.todo.dto.response.TodoDTO;
 import com.cloudy.todo.todo.repository.TodoRepository;
 import com.cloudy.todo.todo.service.TodoService;
+import org.hamcrest.core.IsNull;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -291,14 +292,16 @@ class TodoControllerTest {
         // then
         mockMvc.perform(get("/api/v2/todos?createdDate=2021-08-zz").contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isBadRequest())
-            .andExpect(jsonPath("$.code", is("IllegalArgumentException")))
+            .andExpect(jsonPath("$.statusCode", is(400)))
             .andExpect(jsonPath("$.message", is("Parse attempt failed for value [2021-08-zz]")))
+            .andExpect(jsonPath("$.error", is(IsNull.nullValue())))
             .andDo(print());
 
         mockMvc.perform(get("/api/v2/todos?status=BLABLA").contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isBadRequest())
-            .andExpect(jsonPath("$.code", is("IllegalArgumentException")))
+            .andExpect(jsonPath("$.statusCode", is(400)))
             .andExpect(jsonPath("$.message", is("No enum constant com.cloudy.todo.todo.domain.TodoStatus.BLABLA")))
+            .andExpect(jsonPath("$.error", is(IsNull.nullValue())))
             .andDo(print());
 
 //        mockMvc.perform(get("/api/v2/todos?content=이것을찾아주세요이것을찾아주세요").contentType(MediaType.APPLICATION_JSON))
