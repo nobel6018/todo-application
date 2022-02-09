@@ -1,5 +1,5 @@
 plugins {
-    id("org.springframework.boot") version "2.5.4"
+    id("org.springframework.boot") version "2.6.3"
     id("io.spring.dependency-management") version "1.0.11.RELEASE"
     id("java")
     id("jacoco")
@@ -37,8 +37,10 @@ tasks.withType<Test> {
     useJUnitPlatform()
 }
 
+// refer: https://docs.gradle.org/current/userguide/jacoco_plugin.html
 jacoco {
     toolVersion = "0.8.7"
+    reportsDirectory.set(layout.buildDirectory.dir("jacoco-report"))
 }
 
 tasks.jacocoTestReport {
@@ -46,13 +48,6 @@ tasks.jacocoTestReport {
         html.required.set(true)
         xml.required.set(false)
         csv.required.set(false)
-    }
-}
-
-tasks.test {
-    extensions.configure(JacocoTaskExtension::class) {
-        enabled = true
-        destinationFile = file("$buildDir/jacoco/jacoco.exec")
     }
 }
 
